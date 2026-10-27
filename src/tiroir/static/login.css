@@ -1,0 +1,20 @@
+@font-face{font-family:'Inter';font-weight:400;font-display:swap;src:url(/static/inter-400.woff2) format('woff2')}
+@font-face{font-family:'Inter';font-weight:500;font-display:swap;src:url(/static/inter-500.woff2) format('woff2')}
+:root{--bg:#dedede;--surface:#e6e6e6;--t:#000;--t3:#6b6b6b;--plate:#f0eb84;--ink:#000;--on-ink:#fff;color-scheme:light}
+:root[data-theme="dark"]{--bg:#161616;--surface:#1f1f1f;--t:#dedede;--t3:#8c8c8c;--ink:#dedede;--on-ink:#161616;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--t);font-family:'Inter',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;padding:16px;-webkit-font-smoothing:antialiased}
+/* juste l'étiquette jaune et le mot de passe */
+main{width:100%;max-width:300px;display:flex;flex-direction:column;align-items:center;gap:26px;animation:in .6s cubic-bezier(.2,.8,.2,1)}
+.brand{color:#000;font-weight:500;font-size:18px;line-height:1;background:var(--plate);border:1.4px solid #000;border-radius:8px;padding:9px 24px}
+form{width:100%;display:flex;flex-direction:column;gap:8px}
+.field{display:flex;border:1.4px solid var(--ink);border-radius:8px;background:var(--surface);overflow:hidden}
+input{flex:1;min-width:0;background:transparent;border:0;padding:12px 14px;color:var(--t);font:inherit;outline:none}
+input::placeholder{color:var(--t3)}
+button{flex:none;width:46px;background:var(--ink);color:var(--on-ink);border:0;font:inherit;font-size:18px;cursor:pointer;transition:background-color .2s,color .2s}
+button:hover{background:var(--plate);color:#000}
+.field:focus-within{box-shadow:0 0 0 3px var(--plate)}
+.msg{min-height:1.4em;margin:0;color:var(--t);font-size:13px;text-align:center}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){main{animation:none}}

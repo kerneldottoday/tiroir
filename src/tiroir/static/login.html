@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="{{LANG}}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tiroir</title>
+<meta name="robots" content="noindex,nofollow">
+<script src="/static/theme.js?v=100"></script>
+<link rel="stylesheet" href="/static/login.css?v=100"></head>
+<body>
+<main>
+  <div class="brand">tiroir</div>
+  <form method="post" action="/login" autocomplete="off">
+    <div class="field">
+      <input id="password" name="password" type="password" autocomplete="current-password" placeholder="{{PLACEHOLDER}}" aria-label="{{PLACEHOLDER}}" required autofocus>
+      <button type="submit" aria-label="{{ENTER}}">→</button>
+    </div>
+    <p class="msg" role="alert">{{MSG}}</p>
+  </form>
+</main>
+</body></html>

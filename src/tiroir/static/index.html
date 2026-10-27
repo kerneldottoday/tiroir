@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tiroir</title>
+<meta name="robots" content="noindex,nofollow">
+<script src="/static/i18n.js?v=100"></script>
+<script src="/static/theme.js?v=100"></script>
+<link rel="stylesheet" href="/static/app.css?v=100">
+<link rel="stylesheet" href="/static/home.css?v=100">
+<link rel="stylesheet" href="/static/cabinet.css?v=100"></head><body data-mode="cabinet">
+
+<section id="cabinet" aria-label="Le meuble : un tiroir par projet">
+  <header class="h-top">
+    <div class="h-brand">tiroir</div>
+    <div class="h-acts"><span class="h-badge" id="cBadge" hidden></span><button class="h-link c-all" id="cAll" type="button">tout</button><button class="h-link" data-theme-toggle type="button">sombre</button><button class="h-link admin-only" id="cShare" type="button">partager</button><button class="h-link" id="cOut" type="button">quitter</button></div>
+  </header>
+  <div class="c-stage" id="cStage">
+    <div class="c-row">
+      <div class="h-zone admin-only z-arch" id="cZArch" aria-hidden="true">
+        <svg class="z-ico" viewBox="0 0 64 80" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <g class="z-lid"><path d="M7 21h50v11H7z"/></g>
+          <path d="M11 32v38h42V32"/><path d="M25 43h14"/></svg>
+        <span class="z-lab" id="cZArchLab">archives</span><span class="z-sub" id="cZArchSub">ranger</span>
+      </div>
+        <div class="c-meuble">
+          <div class="c-cornice" aria-hidden="true"></div>
+          <div class="c-grid" id="cGrid" role="list" aria-label="Projets"></div>
+          <div class="c-plinth" aria-hidden="true"></div>
+        </div>
+      <div class="h-zone admin-only z-trash" id="cZTrash" aria-hidden="true">
+        <svg class="z-ico" viewBox="0 0 64 80" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <g class="z-lid"><path d="M9 19h46"/><path d="M25 19v-6h14v6"/></g>
+          <path d="M14 25l4 45h28l4-45"/><path d="M26 33v29"/><path d="M38 33v29"/></svg>
+        <span class="z-lab">corbeille</span><span class="z-sub">30 jours</span>
+      </div>
+    </div>
+    <div class="c-extra" id="cExtra"></div>
+    <div class="c-shelf" id="cShelf" hidden><div class="c-grid c-shelf-grid" id="cShelfGrid" role="list" aria-label="Tiroirs archivés"></div></div>
+  </div>
+</section>
+
+<section id="home" aria-label="Tiroir ouvert : les intercalaires du projet">
+  <header class="h-top">
+    <div class="h-left"><button class="h-link h-back" id="hBack" type="button" aria-label="Revenir au meuble">← meuble</button><div class="h-brand">tiroir</div></div>
+    <div class="h-acts"><span class="h-badge" id="hBadge" hidden></span><button class="h-link" data-theme-toggle type="button">sombre</button><button class="h-link admin-only" id="hShare" type="button">partager</button><button class="h-link" id="hOut" type="button">quitter</button></div>
+  </header>
+  <div class="h-stage" id="hStage" tabindex="-1">
+    <div class="h-cab">
+      <div class="h-inside"><div class="h-plane" id="hPlane" role="list" aria-label="Dossiers de projets"></div></div>
+      <div class="h-front"><span class="h-label" id="hLabel"></span></div>
+    </div>
+  </div>
+  <div class="h-zone z-trash" id="zTrash" aria-hidden="true">
+    <svg class="z-ico" viewBox="0 0 64 80" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <g class="z-lid"><path d="M9 19h46"/><path d="M25 19v-6h14v6"/></g>
+      <path d="M14 25l4 45h28l4-45"/><path d="M26 33v29"/><path d="M38 33v29"/></svg>
+    <span class="z-lab">corbeille</span><span class="z-sub">30 jours</span>
+  </div>
+  <div class="h-zone z-arch" id="zArch" aria-hidden="true">
+    <svg class="z-ico" viewBox="0 0 64 80" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <g class="z-lid"><path d="M7 21h50v11H7z"/></g>
+      <path d="M11 32v38h42V32"/><path d="M25 43h14"/></svg>
+    <span class="z-lab" id="zArchLab">archives</span><span class="z-sub" id="zArchSub">ranger</span>
+  </div>
+</section>
+
+<div id="app">
+  <header id="top">
+    <button class="btn" id="btnHome" type="button" aria-label="Revenir au tiroir des projets">← Tiroir</button>
+    <button class="btn" id="btnList" type="button" aria-label="Ouvrir la liste des notes">Liste</button>
+    <div id="brand">tiroir</div>
+    <span class="role-badge" id="roleBadge" hidden></span>
+    <div id="count"></div>
+    <div id="sync" title="Notes enregistrées sur ton serveur"><b>●</b> <span id="syncTxt">Connexion</span></div>
+    <button class="btn" id="btnFit" type="button">Tout voir</button>
+    <button class="btn" id="btnTheme" data-theme-toggle type="button">sombre</button>
+    <button class="btn primary write-only" id="btnNew" type="button">+ Note</button>
+    <button class="btn" id="btnOut" type="button">Quitter</button>
+  </header>
+
+  <aside id="list" aria-label="Liste des notes">
+    <div class="head">
+      <div class="lab whererow"><span id="where"></span>
+        <span id="fActs" hidden><button class="mini-btn" id="fRen" type="button">Renommer</button><button class="mini-btn danger" id="fDelF" type="button">Supprimer</button></span></div>
+      <div id="trashFolders" hidden></div>
+      <input id="q" type="search" placeholder="Chercher…" autocomplete="off" aria-label="Chercher une note">
+      <div id="chips" role="group" aria-label="Filtrer par état"></div>
+    </div>
+    <div id="rows"></div>
+    <div id="mapbox"><canvas id="mini" aria-label="Carte du mur : cliquer pour se déplacer"></canvas></div>
+  </aside>
+
+  <main id="board" aria-label="Mur de notes">
+    <div id="world"></div>
+    <div id="empty"><pre id="emptyTxt">dossier vide
+double-clic sur le mur, ou « + note »</pre></div>
+    <div class="hint"><div class="zoom"><button id="zOut" type="button" aria-label="Dézoomer">−</button><span id="zLab">100%</span><button id="zIn" type="button" aria-label="Zoomer">+</button><button id="z1" type="button" aria-label="Zoom 100 %" title="1:1">1:1</button></div></div>
+  </main>
+
+  <aside id="fiche" aria-label="Fiche de la note">
+    <div class="fh"><div id="fid">000</div><button class="btn" id="fClose" type="button">Fermer</button></div>
+    <div class="fld"><span class="lab">État</span>
+      <div class="seg" id="seg"></div></div>
+    <div class="fld"><label class="lab" for="fFolder">Dossier</label><select id="fFolder"></select></div>
+    <div class="fld"><label class="lab" for="fTitle">Titre</label><input id="fTitle" class="title" type="text" maxlength="90" autocomplete="off"></div>
+    <div class="fld"><label class="lab" for="fBody">Contenu</label><textarea id="fBody" maxlength="4000"></textarea></div>
+    <div class="lab" id="fMeta"></div>
+    <div class="acts"><button class="btn" id="fCenter" type="button">Centrer</button><button class="btn admin-only" id="fRestore" type="button" hidden>Restaurer</button><button class="btn danger admin-only" id="fDel" type="button">Supprimer</button></div>
+  </aside>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="share" hidden></div>
+
+<script src="/static/app.js?v=100"></script>
+<script src="/static/home.js?v=100"></script>
+<script src="/static/cabinet.js?v=100"></script>
+<script src="/static/partage.js?v=100"></script>
+</body></html>

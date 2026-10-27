@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tiroir"
+version = "1.0.0"
+description = "A filing cabinet for your sticky notes, on your own server, where your AI agents can drop notes too."
+readme = "README.md"
+license = { text = "AGPL-3.0-or-later" }
+requires-python = ">=3.10"
+dependencies = []
+keywords = ["notes", "sticky-notes", "self-hosted", "ai-agents", "kanban", "board"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+  "Environment :: Web Environment",
+  "Topic :: Office/Business",
+]
+
+[project.urls]
+Source = "https://github.com/kerneldottoday/tiroir"
+
+[project.scripts]
+tiroir = "tiroir.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6", "playwright>=1.45"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+tiroir = ["static/*"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

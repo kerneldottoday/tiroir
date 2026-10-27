@@ -1,0 +1,31 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -e ".[dev]" pytest-cov
+      - run: ruff check src tests
+      - run: pytest -q --cov=tiroir --cov-fail-under=80
+      - run: for f in src/tiroir/static/*.js; do node --check "$f"; done
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t tiroir:ci .
+      - run: |
+          docker run -d --name t -p 5950:5950 -e TIROIR_PASSWORD="ci password 123456" tiroir:ci
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:5950/ >/dev/null && exit 0; sleep 1; done
+          docker logs t; exit 1

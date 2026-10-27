@@ -1,0 +1,332 @@
+{
+ "projects": {
+  "pkitchen": {
+   "name": "kitchen reno",
+   "order": 0,
+   "createdAt": 1793130714995
+  },
+  "ptrip": {
+   "name": "japan trip",
+   "order": 1,
+   "createdAt": 1793130714995
+  },
+  "pnovel": {
+   "name": "novel",
+   "order": 2,
+   "createdAt": 1793130714995
+  },
+  "pgarden": {
+   "name": "garden",
+   "order": 3,
+   "createdAt": 1793130714995
+  },
+  "parrivees": {
+   "name": "inbox",
+   "order": 100000,
+   "createdAt": 1793130714995
+  }
+ },
+ "folders": {
+  "fkitchen0": {
+   "name": "general",
+   "order": 0,
+   "project": "pkitchen",
+   "createdAt": 1793130714995
+  },
+  "fkitchen1": {
+   "name": "docs",
+   "order": 1,
+   "project": "pkitchen",
+   "createdAt": 1793130714995
+  },
+  "fkitchen2": {
+   "name": "ideas",
+   "order": 2,
+   "project": "pkitchen",
+   "createdAt": 1793130714995
+  },
+  "ftrip0": {
+   "name": "general",
+   "order": 0,
+   "project": "ptrip",
+   "createdAt": 1793130714995
+  },
+  "ftrip1": {
+   "name": "docs",
+   "order": 1,
+   "project": "ptrip",
+   "createdAt": 1793130714995
+  },
+  "ftrip2": {
+   "name": "ideas",
+   "order": 2,
+   "project": "ptrip",
+   "createdAt": 1793130714995
+  },
+  "fnovel0": {
+   "name": "general",
+   "order": 0,
+   "project": "pnovel",
+   "createdAt": 1793130714995
+  },
+  "fnovel1": {
+   "name": "docs",
+   "order": 1,
+   "project": "pnovel",
+   "createdAt": 1793130714995
+  },
+  "fnovel2": {
+   "name": "ideas",
+   "order": 2,
+   "project": "pnovel",
+   "createdAt": 1793130714995
+  },
+  "fgarden0": {
+   "name": "general",
+   "order": 0,
+   "project": "pgarden",
+   "createdAt": 1793130714995
+  },
+  "fgarden1": {
+   "name": "docs",
+   "order": 1,
+   "project": "pgarden",
+   "createdAt": 1793130714995
+  },
+  "fgarden2": {
+   "name": "ideas",
+   "order": 2,
+   "project": "pgarden",
+   "createdAt": 1793130714995
+  },
+  "fresearchbot": {
+   "name": "RESEARCH-BOT",
+   "order": 10,
+   "project": "parrivees",
+   "createdAt": 1793130714995
+  },
+  "fwatcher": {
+   "name": "WATCHER",
+   "order": 12,
+   "project": "parrivees",
+   "createdAt": 1793130714995
+  }
+ },
+ "notes": {
+  "n001": {
+   "title": "Order the oak worktop",
+   "body": "3 m, oiled, delivery before the 14th.",
+   "status": "todo",
+   "tag": "",
+   "folder": "fkitchen0",
+   "x": 0,
+   "y": 0,
+   "z": 1,
+   "n": 1,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": ""
+  },
+  "n002": {
+   "title": "Electrician quote",
+   "body": "Second quote received: 1,240 €.",
+   "status": "doing",
+   "tag": "",
+   "folder": "fkitchen0",
+   "x": 270,
+   "y": 0,
+   "z": 2,
+   "n": 2,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": ""
+  },
+  "n003": {
+   "title": "Tiles chosen",
+   "body": "Zellige, sage green, 10x10.",
+   "status": "done",
+   "tag": "",
+   "folder": "fkitchen0",
+   "x": 540,
+   "y": 0,
+   "z": 3,
+   "n": 3,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": ""
+  },
+  "n004": {
+   "title": "Measure the window",
+   "body": "",
+   "status": "todo",
+   "tag": "",
+   "folder": "fkitchen0",
+   "x": 0,
+   "y": 230,
+   "z": 4,
+   "n": 4,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": ""
+  },
+  "n005": {
+   "title": "Rail pass",
+   "body": "7 days, start in Kyoto.",
+   "status": "todo",
+   "tag": "",
+   "folder": "ftrip0",
+   "x": 0,
+   "y": 0,
+   "z": 5,
+   "n": 5,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": ""
+  },
+  "n006": {
+   "title": "Ryokan in Hakone",
+   "body": "Booked for 2 nights.",
+   "status": "done",
+   "tag": "",
+   "folder": "ftrip0",
+   "x": 270,
+   "y": 0,
+   "z": 6,
+   "n": 6,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": ""
+  },
+  "n007": {
+   "title": "Learn 50 words",
+   "body": "Greetings, numbers, food.",
+   "status": "doing",
+   "tag": "",
+   "folder": "ftrip0",
+   "x": 540,
+   "y": 0,
+   "z": 7,
+   "n": 7,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": ""
+  },
+  "n008": {
+   "title": "Chapter 3 rewrite",
+   "body": "The letter arrives too early. Move it after the storm.",
+   "status": "doing",
+   "tag": "",
+   "folder": "fnovel0",
+   "x": 0,
+   "y": 0,
+   "z": 8,
+   "n": 8,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": ""
+  },
+  "n009": {
+   "title": "Name for the lighthouse keeper",
+   "body": "Ilse? Maren?",
+   "status": "info",
+   "tag": "",
+   "folder": "fnovel0",
+   "x": 270,
+   "y": 0,
+   "z": 9,
+   "n": 9,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": ""
+  },
+  "n010": {
+   "title": "Ending",
+   "body": "Open, but not vague.",
+   "status": "todo",
+   "tag": "",
+   "folder": "fnovel0",
+   "x": 540,
+   "y": 0,
+   "z": 10,
+   "n": 10,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": ""
+  },
+  "n011": {
+   "title": "Plant garlic",
+   "body": "Before the first frost.",
+   "status": "todo",
+   "tag": "",
+   "folder": "fgarden0",
+   "x": 0,
+   "y": 0,
+   "z": 11,
+   "n": 11,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": ""
+  },
+  "n012": {
+   "title": "Compost",
+   "body": "Turn it every two weeks.",
+   "status": "info",
+   "tag": "",
+   "folder": "fgarden0",
+   "x": 270,
+   "y": 0,
+   "z": 12,
+   "n": 12,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": ""
+  },
+  "a013": {
+   "title": "Prices of oak worktops",
+   "body": "Found 4 suppliers; cheapest 410 € for 3 m. Sources in docs/oak.md.",
+   "status": "info",
+   "tag": "RESEARCH-BOT",
+   "folder": "fresearchbot",
+   "x": 0,
+   "y": 0,
+   "z": 13,
+   "n": 13,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": "from-agents/research-bot/0.md"
+  },
+  "a014": {
+   "title": "Weather in Kyoto, April",
+   "body": "Average 15 °C, 9 rainy days.",
+   "status": "info",
+   "tag": "RESEARCH-BOT",
+   "folder": "fresearchbot",
+   "x": 270,
+   "y": 0,
+   "z": 14,
+   "n": 14,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": "from-agents/research-bot/1.md"
+  },
+  "a015": {
+   "title": "Website back online",
+   "body": "The garden blog answered again at 06:12 after 4 minutes down.",
+   "status": "info",
+   "tag": "WATCHER",
+   "folder": "fwatcher",
+   "x": 540,
+   "y": 0,
+   "z": 15,
+   "n": 15,
+   "createdAt": 1793130714995,
+   "updatedAt": 1793130714995,
+   "src": "from-agents/watcher/2.md"
+  }
+ },
+ "imported": {
+  "from-agents/research-bot/0.md": "a013",
+  "from-agents/research-bot/1.md": "a014",
+  "from-agents/watcher/2.md": "a015"
+ }
+}

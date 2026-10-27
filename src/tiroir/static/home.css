@@ -1,0 +1,184 @@
+/* Accueil : tiroir à intercalaires vu de face (perspective), étiquette jaune, onglets noirs pour « tout » / « sans dossier ». */
+#home{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--bg);
+  transition:opacity .35s ease,visibility .35s}
+body[data-mode="wall"] #home{opacity:0;visibility:hidden;pointer-events:none}
+body[data-mode="home"] #app{visibility:hidden}
+#app{transition:opacity .35s ease}
+body[data-mode="home"] #app{opacity:0}
+
+.h-top{display:flex;justify-content:space-between;align-items:center;padding:18px 24px 0}
+.h-brand{font-weight:500;font-size:15px;line-height:1;color:var(--plate-ink);background:var(--plate);border:var(--line) solid var(--plate-ink);border-radius:8px;padding:6px 16px}
+.h-link{background:none;border:0;padding:6px 2px;font-size:14px;color:var(--t2)}
+.h-link:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+
+.h-stage{flex:1;min-height:0;display:flex;justify-content:center;padding:12px 16px 0;overflow:hidden;touch-action:none;outline:none;user-select:none;-webkit-user-select:none}
+.h-cab{width:min(820px,100%);display:flex;flex-direction:column}
+.h-inside{position:relative;flex:1;min-height:0;perspective:1100px;perspective-origin:50% 100%}
+/* plan plus haut que la zone : une fois incliné, il remplit tout l'écran jusqu'en haut */
+.h-plane{position:absolute;left:6px;right:6px;bottom:0;height:150%;transform:rotateX(24deg);transform-origin:50% 100%;
+  border-left:var(--line) solid var(--ink);border-right:var(--line) solid var(--ink);overflow:hidden;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,var(--ink) 14%);mask-image:linear-gradient(to bottom,transparent 0,var(--ink) 14%)}
+
+/* un intercalaire = une feuille (bord supérieur arrondi) + un onglet en trapèze */
+.h-row{position:absolute;left:0;right:0;top:0;height:160px;will-change:transform}
+.h-lift{position:absolute;inset:0;transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .4s ease;transition-delay:var(--d,0ms)}
+.h-plane.pre .h-lift{transform:translateY(80px);opacity:0;transition:none}
+.h-sheet{position:absolute;left:-2px;right:-2px;top:32px;bottom:0;background:var(--bg);border:var(--line) solid var(--ink);border-bottom:0;border-radius:12px 12px 0 0}
+.h-tab,.h-newin{position:absolute;top:0;z-index:1;height:34px;width:27%;min-width:170px}
+.h-tab{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 20px 2px;background:transparent;border:0;
+  color:var(--ink);font-family:var(--f-sans);font-size:16px;line-height:1;cursor:pointer}
+.h-tab::before{content:'';position:absolute;inset:0 0 -3px;z-index:-1;background:var(--bg);border:var(--line) solid var(--ink);border-bottom:0;
+  border-radius:8px 8px 0 0;transform:perspective(40px) rotateX(9deg);transform-origin:bottom;transition:background-color .2s}
+.h-tab:focus-visible{outline:none}
+.h-num{font-size:16px;flex:none;font-feature-settings:'tnum' 1}
+.h-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:lowercase}
+
+.k-div .h-tab{color:var(--on-ink)}
+.k-div .h-tab::before{background:var(--ink)}
+.k-new .h-tab{color:var(--t2)}
+.k-new .h-tab::before{border-style:dashed;background:transparent}
+.k-new .h-sheet{border-style:dashed}
+
+/* survol / focus : l'intercalaire se soulève */
+.h-row:not(.k-blank):hover .h-lift,.h-row.focus .h-lift{transform:translateY(-12px);transition-delay:0ms}
+.h-row:not(.k-blank):hover .h-tab::before,.h-row.focus .h-tab::before{background:var(--plate)}
+.h-row:not(.k-blank):hover .h-tab,.h-row.focus .h-tab{color:var(--plate-ink)}
+.k-div:hover .h-tab::before,.k-div.focus .h-tab::before{background:var(--ink)}
+.k-div:hover .h-tab,.k-div.focus .h-tab{color:var(--plate)}
+.h-row.born .h-tab::before{background:var(--plate)}
+.h-row.born .h-tab{color:var(--plate-ink)}
+
+/* ouverture : le dossier sort du tiroir, les autres s'effacent */
+.h-stage.opening .h-row:not(.pull) .h-lift{opacity:.15;transition-delay:0ms}
+.h-row.pull .h-lift{transform:translateY(-110px);transition:transform .38s cubic-bezier(.5,0,.2,1)}
+.h-row.pull .h-tab::before{background:var(--plate)}
+.h-row.pull .h-tab,.h-row.pull .h-name{color:var(--plate-ink)}
+
+.h-newin{left:0;padding:0 16px 2px;border:var(--line) solid var(--ink);border-bottom:0;border-radius:8px 8px 0 0;background:var(--paper);color:var(--paper-ink);
+  font-family:var(--f-sans);font-size:15px;outline:none}
+
+/* façade du tiroir + étiquette */
+.h-front{position:relative;flex:none;height:96px;margin:0 -22px;display:flex;align-items:center;justify-content:center;
+  border:var(--line) solid var(--ink);border-radius:3px;background:var(--bg)}
+.h-front::before{content:'';position:absolute;left:-1px;right:-1px;top:-9px;height:8px;border:var(--line) solid var(--ink);border-bottom:0;background:var(--bg)}
+.h-label{background:var(--plate);color:var(--plate-ink);border:1.4px solid var(--plate-ink);border-radius:8px;padding:6px 20px;font-family:var(--f-sans);font-size:15px;
+  transform:perspective(60px) rotateX(-4deg)}
+
+@media (max-width:640px){
+  .h-tab,.h-newin{width:44%;min-width:0;font-size:13px;padding:0 12px 2px}
+  .h-front{margin:0 -8px;height:76px}
+  }
+@media (prefers-reduced-motion:reduce){
+  #home,#app,.h-lift,.h-tab::before{transition:none !important}
+}
+
+/* ---------- rôles : l'interface suit les droits (le serveur les impose) ---------- */
+body:not([data-role="admin"]) .admin-only{display:none !important}
+body[data-role="view"] .write-only{display:none !important}
+.h-acts{display:flex;align-items:center;gap:18px}
+.h-badge,.role-badge{font-size:12px;color:var(--on-ink);background:var(--ink);
+  border:var(--line) solid var(--ink);border-radius:7px;padding:3px 10px;white-space:nowrap;text-transform:lowercase}
+.h-badge[hidden],.role-badge[hidden]{display:none}
+
+/* ---------- message « Annuler » ---------- */
+#toast{position:fixed;left:50%;bottom:24px;z-index:90;transform:translate(-50%,20px);opacity:0;pointer-events:none;
+  display:flex;align-items:center;gap:14px;padding:10px 12px 10px 18px;border-radius:10px;background:var(--ink);color:var(--on-ink);
+  font-size:13px;transition:opacity .2s,transform .2s;max-width:calc(100vw - 32px)}
+#toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#toast button{background:var(--plate);color:var(--plate-ink);border:0;border-radius:7px;padding:5px 12px;font-size:13px;text-transform:lowercase}
+
+/* ---------- panneau de partage (admin) ---------- */
+#share{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:16px}
+#share[hidden]{display:none}
+.sh-back{position:absolute;inset:0;background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(2px)}
+.sh-panel{position:relative;width:min(560px,100%);max-height:calc(100vh - 32px);overflow:auto;background:var(--paper);color:var(--paper-ink);
+  border:var(--line) solid var(--ink);border-radius:12px;padding:20px 22px 22px;box-shadow:0 24px 50px -24px var(--shadow)}
+.sh-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.sh-head h2{margin:0;font-weight:500;font-size:20px;text-transform:lowercase}
+.sh-head .h-link{color:var(--paper-dim)}
+.sh-note{margin:8px 0 16px;font-size:13px;line-height:1.45;color:var(--paper-dim)}
+.sh-form{display:flex;flex-direction:column;gap:8px;padding-bottom:16px;border-bottom:2px dotted color-mix(in srgb,var(--paper-ink) 25%,transparent)}
+.sh-form .lab{color:var(--paper-dim);margin-top:4px}
+.sh-in{width:100%;background:var(--on-ink);color:var(--ink);border:1.2px solid var(--ink);border-radius:8px;padding:9px 12px;font:inherit}
+.sh-seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sh-opt{display:flex;align-items:center;gap:8px;border:1.2px solid var(--ink);border-radius:8px;padding:8px 12px;cursor:pointer}
+.sh-opt:has(input:checked){background:var(--ink);color:var(--on-ink)}
+.sh-opt input{accent-color:var(--accent)}
+.sh-check{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.sh-check input{accent-color:var(--ink);width:16px;height:16px}
+.sh-folders{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px 14px;padding:4px 0 4px 24px}
+.sh-folders.off{opacity:.35;pointer-events:none}
+.sh-form .btn.primary{align-self:flex-start;margin-top:6px;background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.sh-form .btn.primary:hover{background:var(--plate);border-color:var(--plate-ink);color:var(--plate-ink)}
+.sh-msg{margin:0;min-height:1.3em;font-size:13px;color:var(--ok)}
+.sh-msg.bad{color:var(--accent)}
+.sh-sub{margin:16px 0 6px;color:var(--paper-dim)}
+.sh-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--paper-ink) 12%,transparent)}
+.sh-who{display:flex;align-items:center;gap:8px}
+.sh-pill{font-size:12px;border:var(--line) solid var(--ink);border-radius:6px;padding:1px 8px;text-transform:lowercase}
+.sh-pill.edit{background:var(--plate)}
+.sh-scope{font-size:12.5px;color:var(--paper-dim);margin-top:2px}
+.sh-acts{display:flex;gap:6px;flex:none}
+.sh-acts .btn{color:var(--ink);border-color:var(--ink);font-size:10px;padding:5px 10px}
+.sh-acts .btn.danger.armed{background:var(--plate-ink);border-color:var(--plate-ink);color:var(--plate)}
+.sh-empty{font-size:13px;color:var(--paper-dim)}
+@media (max-width:640px){.sh-row{flex-direction:column;align-items:flex-start}}
+
+/* ---------- appui long : le dossier sort du tiroir ---------- */
+.h-row.pressing .h-lift{transform:translateY(-6px) scale(.995);transition:transform .42s ease}
+.h-row.out .h-tab{opacity:.0}
+.h-row.out .h-lift{transform:translateY(-4px)}
+.h-row.out .h-sheet{border-style:dashed}
+.h-row.drop .h-lift{transform:translateY(16px);transition-delay:0ms}
+.h-row.drop .h-sheet{border-top:3px solid var(--ink)}
+.k-arch .h-tab{color:var(--t3)}
+.k-arch .h-tab::before{border-style:dashed}
+
+.h-ghost{position:fixed;left:0;top:0;z-index:70;pointer-events:none;will-change:transform;
+  transform-origin:30px 12px;filter:drop-shadow(0 18px 22px var(--shadow))}
+.h-ghost.up{animation:g-up .26s cubic-bezier(.2,.9,.3,1.2)}
+.h-ghost.back,.h-ghost.into{transition:transform .34s cubic-bezier(.5,0,.2,1),opacity .34s ease}
+.h-ghost.into{opacity:.15}
+@keyframes g-up{from{scale:.94}60%{scale:1.04}to{scale:1}}
+.h-ghost{transition:scale .2s ease}
+.h-ghost.over{scale:.58}
+.g-tab{position:relative;display:inline-flex;align-items:center;justify-content:space-between;gap:14px;min-width:170px;height:34px;
+  padding:0 20px 2px;margin-left:18px;color:var(--plate-ink);font-family:var(--f-sans);font-size:16px;z-index:1}
+.g-tab::before{content:'';position:absolute;inset:0 0 -3px;z-index:-1;background:var(--plate);border:1.4px solid var(--plate-ink);border-bottom:0;
+  border-radius:8px 8px 0 0;transform:perspective(40px) rotateX(9deg);transform-origin:bottom}
+.g-body{height:118px;margin-top:-1px;padding:16px 18px;background:var(--paper);border:1.4px solid var(--ink);border-radius:6px 12px 6px 6px;
+  font-size:13px;color:var(--paper-dim);
+  background-image:repeating-linear-gradient(to bottom,transparent 0 23px,color-mix(in srgb,var(--ink) 12%,transparent) 23px 24px)}
+
+/* ---------- zones : corbeille à gauche, archives à droite ---------- */
+.h-zone{position:fixed;top:50%;z-index:60;width:150px;height:min(46vh,380px);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;border:1.4px dashed var(--ink);border-radius:18px;background:var(--surface);color:var(--ink);pointer-events:none;
+  transition:transform .38s cubic-bezier(.2,.8,.2,1),background-color .18s,color .18s,border-color .18s}
+.z-trash{left:24px;transform:translate(calc(-100% - 40px),-50%)}
+.z-arch{right:24px;transform:translate(calc(100% + 40px),-50%)}
+#home.carrying .z-trash,#home.carrying .z-arch{transform:translate(0,-50%)}
+#home.carrying .z-arch{transition-delay:.04s}
+#home.carrying .h-plane{opacity:.92}
+.z-ico{width:58px;height:72px;overflow:visible}
+.z-lid{transform-box:fill-box;transition:transform .22s cubic-bezier(.3,1.4,.5,1)}
+.z-trash .z-lid{transform-origin:0% 100%}
+.z-arch .z-lid{transform-origin:50% 100%}
+.z-lab{font-family:var(--f-sans);font-size:16px;text-transform:lowercase}
+.z-sub{font-size:12px;color:var(--t3)}
+.h-zone.hot{border-style:solid;transform:translate(0,-50%) scale(1.06)}
+.z-trash.hot{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.z-arch.hot{background:var(--plate);border-color:var(--plate-ink);color:var(--plate-ink)}
+.h-zone.hot .z-sub{color:inherit;opacity:.8}
+.z-trash.hot .z-lid{transform:rotate(-32deg) translate(-2px,-4px)}
+.z-arch.hot .z-lid{transform:translateY(-10px) rotate(-5deg)}
+.h-zone.gulp{animation:z-gulp .34s ease}
+@keyframes z-gulp{40%{scale:1.12}100%{scale:1}}
+@media (max-width:640px){
+  .h-zone{width:86px;height:min(38vh,260px);border-radius:14px}
+  .z-trash{left:8px}.z-arch{right:8px}
+  .z-ico{width:40px;height:50px}
+  .z-lab{font-size:13px}
+}
+@media (prefers-reduced-motion:reduce){
+  .h-zone,.z-lid,.h-ghost{transition:none !important;animation:none !important}
+}

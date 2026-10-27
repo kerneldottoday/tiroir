@@ -1,0 +1,29 @@
+# Tiroir behind Caddy (automatic HTTPS). Replace notes.example.com with your domain, then: docker compose up -d
+# Set the password once:  docker compose run --rm tiroir set-password
+services:
+  tiroir:
+    build: .
+    restart: unless-stopped
+    environment:
+      TIROIR_TRUST_PROXY: "172.16.0.0/12"  # the Docker network where Caddy runs
+      TIROIR_LANG: "en"              # names of the drawers the server creates (en | fr)
+      # TIROIR_AGENTS_DIR: /agents   # uncomment to let agents drop notes in ./agents/<agent>/<note>.md
+    volumes:
+      - tiroir-data:/data
+      # - ./agents:/agents:ro
+    expose:
+      - "5950"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    command: caddy reverse-proxy --from notes.example.com --to tiroir:5950
+    volumes:
+      - caddy-data:/data
+
+volumes:
+  tiroir-data:
+  caddy-data:

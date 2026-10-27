@@ -1,0 +1,178 @@
+/* Le meuble : un classeur à tiroirs vu de face (un tiroir = un projet). Même langage que le tiroir :
+   gris, trait noir, étiquette jaune, numéros sur plaque noire. */
+#cabinet{position:fixed;inset:0;z-index:55;display:flex;flex-direction:column;background:var(--bg);overflow-y:auto;
+  transition:opacity .35s ease,visibility .35s}
+body:not([data-mode="cabinet"]) #cabinet{opacity:0;visibility:hidden;pointer-events:none}
+body[data-mode="cabinet"] #home{opacity:0;visibility:hidden;pointer-events:none}
+body[data-mode="cabinet"] #app{visibility:hidden;opacity:0}
+
+.h-left{display:flex;align-items:center;gap:16px}
+
+.c-stage{flex:1;display:flex;flex-direction:column;align-items:center;padding:20px 16px 32px}
+.c-stage.opening .c-drawer:not(.pull){opacity:.18;transition-delay:0ms}
+
+/* caisse du meuble : corniche, façade, socle à pieds */
+.c-meuble{width:min(1040px,100%);display:flex;flex-direction:column}
+.c-cornice{height:14px;margin:0 -10px;border:var(--line) solid var(--ink);border-bottom:0;border-radius:4px 4px 0 0;background:var(--bg)}
+.c-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px;
+  border:var(--line) solid var(--ink);background:var(--drawer);perspective:900px}
+.c-plinth{position:relative;height:16px;margin:0 6px;border:var(--line) solid var(--ink);border-top:0;background:var(--bg)}
+.c-plinth::before,.c-plinth::after{content:'';position:absolute;bottom:-12px;width:34px;height:11px;border:var(--line) solid var(--ink);border-top:0;background:var(--bg)}
+.c-plinth::before{left:22px}.c-plinth::after{right:22px}
+
+/* un tiroir */
+.c-drawer{position:relative;opacity:1;transition:opacity .45s ease,transform .6s cubic-bezier(.2,.8,.2,1);transition-delay:var(--d,0ms)}
+.c-grid.pre .c-drawer{opacity:0;transform:translateY(56px);transition:none}
+.c-grid.snap .c-drawer,.c-grid.snap .c-face{transition:none !important}
+.c-face{position:relative;display:block;width:100%;height:158px;padding:0;background:var(--bg);color:var(--ink);
+  border:var(--line) solid var(--ink);border-radius:5px;cursor:pointer;font-family:var(--f-sans);text-align:left;
+  transform-origin:50% 100%;transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s ease;transition-delay:var(--d,0ms)}
+/* filet intérieur : le relief de la façade */
+.c-face::before{content:'';position:absolute;inset:7px;border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);border-radius:3px;pointer-events:none}
+.c-face:hover,.c-face:focus-visible{transform:translateZ(18px) translateY(-2px);box-shadow:0 14px 18px -12px var(--shadow);transition-delay:0ms;outline:none}
+.c-face:focus-visible{box-shadow:0 0 0 3px var(--plate),0 14px 18px -12px var(--shadow)}
+
+/* étiquette du projet (comme l'étiquette collée de la photo) */
+.c-plate{position:absolute;left:18px;top:18px;max-width:calc(100% - 212px);padding:7px 14px;border:var(--line) solid var(--plate-ink);border-radius:6px;
+  background:var(--plate);color:var(--plate-ink);font-size:16px;line-height:1.1;text-transform:lowercase;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* porte-fiche métallique : le cadre double avec la fiche du contenu */
+.c-holder{position:absolute;right:62px;top:14px;width:124px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 8px;
+  border:var(--line) solid var(--ink);border-radius:4px;background:var(--paper);box-shadow:inset 0 0 0 3px var(--bg),inset 0 0 0 4px color-mix(in srgb,var(--ink) 35%,transparent)}
+.c-h1{font-size:13px;font-weight:500}
+.c-h2{font-size:11px;color:var(--t3)}
+/* numéro sur plaque noire, en haut à droite */
+.c-tag{position:absolute;right:14px;top:16px;padding:3px 7px;border-radius:3px;background:var(--ink);color:var(--on-ink);
+  font-size:12px;font-feature-settings:'tnum' 1;letter-spacing:.02em}
+/* quincaillerie : serrure carrée + poignée */
+.c-hw{position:absolute;left:0;right:0;bottom:22px;display:flex;align-items:center;justify-content:center;gap:16px}
+.c-lock{width:12px;height:12px;border:var(--line) solid var(--ink);border-radius:2px;background:var(--surface)}
+.c-handle{position:relative;width:min(42%,170px);height:13px;border:var(--line) solid var(--ink);border-radius:999px;background:var(--surface)}
+.c-handle::before,.c-handle::after{content:'';position:absolute;top:-7px;width:8px;height:7px;border:var(--line) solid var(--ink);border-bottom:0;border-radius:2px 2px 0 0}
+.c-handle::before{left:12px}.c-handle::after{right:12px}
+
+/* tiroir des notes d'agents : étiquette inversée */
+.is-inbox .c-plate{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.is-virtual .c-plate{background:transparent;border-style:dashed;color:var(--t2)}
+
+/* + nouveau tiroir */
+.is-new .c-face{border-style:dashed;background:transparent}
+.is-new .c-face::before{display:none}
+.is-new .c-plate{background:transparent;border-style:dashed;border-color:var(--t2);color:var(--t2)}
+.is-new .c-handle{border-style:dashed;background:transparent}
+.is-new .c-handle::before,.is-new .c-handle::after{display:none}
+.c-in{position:absolute;left:18px;top:16px;width:calc(100% - 36px);max-width:280px;padding:8px 12px;border:var(--line) solid var(--ink);border-radius:6px;
+  background:var(--paper);color:var(--paper-ink);font:15px var(--f-sans);outline:none;z-index:2}
+.born .c-face{animation:c-born .7s ease}
+@keyframes c-born{0%{transform:translateZ(30px)}100%{transform:none}}
+
+.c-rm{position:absolute;right:12px;bottom:8px;z-index:2;padding:2px 6px;border:0;background:none;color:var(--t3);font:11px var(--f-sans);text-transform:lowercase;cursor:pointer}
+.c-rm:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+
+/* ouverture : le tiroir sort vers toi */
+.c-drawer.pull{z-index:3}
+.c-drawer.pull .c-face{transform:translateZ(120px) translateY(18px) scale(1.04);box-shadow:0 28px 30px -16px var(--shadow);
+  transition:transform .42s cubic-bezier(.5,0,.2,1),box-shadow .42s ease}
+.c-drawer.pull .c-plate{background:var(--plate);color:var(--plate-ink);border-color:var(--plate-ink)}
+/* retour : le tiroir rentre dans le meuble */
+.c-drawer.closing{z-index:3}
+.c-drawer.closing .c-face{transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .5s ease;transition-delay:0ms}
+
+/* entrée : le meuble se pose, les onglets du bas montent en dernier */
+.c-meuble{transition:opacity .5s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.c-meuble.pre{opacity:0;transform:translateY(18px) scale(.985);transition:none}
+
+/* sous le meuble : « tout » et la corbeille */
+.c-extra{width:min(1040px,100%);display:flex;justify-content:center;gap:12px;margin-top:30px;flex-wrap:wrap}
+.c-tab{position:relative;display:flex;align-items:center;justify-content:space-between;gap:16px;min-width:170px;height:34px;padding:0 20px 2px;
+  background:transparent;border:0;color:var(--on-ink);font:16px var(--f-sans);cursor:pointer;z-index:0}
+.c-tab::before{content:'';position:absolute;inset:0 0 -3px;z-index:-1;background:var(--ink);border:var(--line) solid var(--ink);border-bottom:0;
+  border-radius:8px 8px 0 0;transform:perspective(40px) rotateX(9deg);transform-origin:bottom}
+.c-tab:hover{color:var(--plate);translate:0 -4px}
+.c-tab{transition:opacity .4s ease .35s,transform .55s cubic-bezier(.2,.8,.2,1) .35s,translate .28s cubic-bezier(.2,.8,.2,1),color .2s}
+.c-extra.pre .c-tab{opacity:0;transform:translateY(20px);transition:none}
+
+@media (max-width:900px){.c-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){
+  .c-grid{grid-template-columns:1fr;padding:8px;gap:8px}
+  .c-face{height:124px}
+  .c-plate{font-size:14px;max-width:calc(55% - 12px)}
+  .c-holder{left:auto;right:58px;width:auto;top:14px}
+  .c-h2{display:none}
+  .c-hw{bottom:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  #cabinet,.c-face,.c-drawer,.c-meuble,.c-tab{transition:none !important;animation:none !important}
+}
+
+/* retouches : « + nouveau tiroir » en entier, étiquette du tiroir ouvert en minuscules, meuble centré */
+.is-new .c-plate{max-width:calc(100% - 36px)}
+.h-label{text-transform:lowercase}
+.c-stage{justify-content:safe center}
+@media (max-width:560px){.c-cornice{margin:0 -4px}}
+.c-rm.armed{background:var(--ink);color:var(--on-ink);border-radius:5px;text-decoration:none}
+
+/* rangement par glisser-déposer : la place vide en pointillés, le tiroir saisi suit le pointeur */
+body.c-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
+body.c-dragging .c-face{cursor:grabbing}
+body[data-role="admin"] .c-drawer[data-pid] .c-face{touch-action:pan-y}
+.c-slot .c-face{border-style:dashed;background:transparent;box-shadow:none;transform:none}
+.c-slot .c-face > *,.c-slot .c-face::before,.c-slot .c-rm{visibility:hidden}
+.c-ghost{position:fixed;left:0;top:0;z-index:90;pointer-events:none;will-change:transform;transition:scale .2s ease !important}
+.c-ghost.over{scale:.55}
+.c-ghost.into{opacity:.15;transition:transform .34s cubic-bezier(.5,0,.2,1),opacity .34s ease,scale .2s ease !important}
+
+/* zones du meuble pendant le glisser : archives à gauche, corbeille à droite (dessin partagé avec le tiroir, home.css) */
+#cabinet .z-arch{left:24px;right:auto;transform:translate(calc(-100% - 40px),-50%)}
+#cabinet .z-trash{right:24px;left:auto;transform:translate(calc(100% + 40px),-50%)}
+#cabinet.carrying .h-zone{transform:translate(0,-50%)}
+#cabinet.carrying .z-trash{transition-delay:.04s}
+#cabinet .h-zone.hot{transform:translate(0,-50%) scale(1.06)}
+#cabinet .z-trash .z-lid{transform-origin:100% 100%}
+#cabinet .z-trash.hot .z-lid{transform:rotate(32deg) translate(2px,-4px)}
+#cabinet.carrying .c-meuble{opacity:.92}
+@media (max-width:640px){#cabinet .z-arch{left:8px}#cabinet .z-trash{right:8px}}
+
+/* grand écran : les deux meubles d'appoint restent posés de chaque côté, au repos ; ils s'allument quand on glisse un tiroir */
+.c-row{width:100%;display:flex;justify-content:center;align-items:stretch;gap:28px}
+.c-meuble{flex:0 1 1040px;min-width:0}
+@media (min-width:1100px){
+  #cabinet .h-zone{position:relative;top:auto;left:auto;right:auto;flex:none;width:132px;height:auto;margin:14px 0 12px;
+    transform:none;background:transparent;color:var(--t2);pointer-events:auto;cursor:pointer;
+    transition:transform .38s cubic-bezier(.2,.8,.2,1),opacity .5s ease,background-color .18s,color .18s,border-color .18s}
+  #cabinet .h-zone:hover{color:var(--ink);border-style:solid}
+  #cabinet .h-zone:hover .z-lid{transform:translateY(-4px)}
+  #cabinet .z-trash:hover .z-lid{transform:rotate(14deg) translate(1px,-2px)}
+  #cabinet.carrying .h-zone{transform:none;background:var(--surface);color:var(--ink);border-style:solid}
+  #cabinet .h-zone.hot{transform:scale(1.06)}
+  #cabinet .z-trash.hot{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+  #cabinet .z-arch.hot{background:var(--plate);border-color:var(--plate-ink);color:var(--plate-ink)}
+  #cabinet .z-arch.pre{opacity:0;transform:translateX(-24px);transition:none}
+  #cabinet .z-trash.pre{opacity:0;transform:translateX(24px);transition:none}
+  #cabinet .h-zone{transition-delay:.25s}
+  #cabinet.carrying .h-zone,#cabinet .h-zone:hover,#cabinet .h-zone.hot{transition-delay:0s}
+  /* les zones remplacent les onglets du bas ; « tout » passe en lien dans l'en-tête */
+  body[data-role="admin"] .c-extra{display:none}
+}
+/* « tout » en lien d'en-tête seulement quand les onglets du bas sont masqués */
+.c-all{display:none}
+@media (min-width:1100px){body[data-role="admin"] .c-all{display:inline-block}}
+/* écran moyen : zones plus étroites et porte-fiche plus court, pour que les étiquettes restent entières */
+@media (min-width:1100px) and (max-width:1400px){
+  .c-row{gap:16px}
+  #cabinet .h-zone{width:104px}
+  #cabinet .z-ico{width:46px;height:58px}
+  .c-holder{width:100px;right:56px}
+  .c-plate{max-width:calc(100% - 176px)}
+}
+
+/* étagère des archives, sous le meuble */
+.c-shelf{width:min(1040px,100%);margin-top:22px}
+.c-shelf[hidden]{display:none}
+.c-shelf-grid{border-style:dashed;background:transparent}
+.is-arch .c-face{background:transparent}
+.is-arch .c-plate{background:transparent;border-style:dashed;border-color:var(--t2);color:var(--t2)}
+.c-grid.c-shelf-grid.pre .c-drawer{opacity:0;transform:translateY(-24px);transition:none}
+.c-ghost .c-face{transform:none;box-shadow:0 26px 30px -14px var(--shadow);transition:none}
+.c-ghost .c-plate{background:var(--plate);color:var(--plate-ink);border-color:var(--plate-ink)}
+.c-ghost .c-rm{display:none}

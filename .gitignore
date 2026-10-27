@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+# never commit a real board or secrets
+notes.json*
+password.json
+sessions.json
+invites.json
+*.env
+.env
