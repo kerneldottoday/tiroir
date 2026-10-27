@@ -12,8 +12,8 @@ jobs:
       matrix:
         python: ["3.10", "3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
       - run: pip install -e ".[dev]" pytest-cov
@@ -23,9 +23,9 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: docker build -t tiroir:ci .
       - run: |
-          docker run -d --name t -p 5950:5950 -e TIROIR_PASSWORD="ci password 123456" tiroir:ci
+          docker run -d --name tiroir-ci -p 5950:5950 -e TIROIR_PASSWORD="ci password 123456" tiroir:ci
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:5950/ >/dev/null && exit 0; sleep 1; done
-          docker logs t; exit 1
+          docker logs tiroir-ci; exit 1
