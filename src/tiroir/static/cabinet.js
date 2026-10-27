@@ -11,6 +11,7 @@
   var cab = $('cabinet'), shelf = $('cShelf'), shelfGrid = $('cShelfGrid'), zTrash = $('cZTrash'), zArch = $('cZArch'), showArch = false;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var INBOX = 'parrivees';
+  var M = function () { return window.ndsMeubles; }; /* meubles.js : le meuble affiché, les flèches */
 
   function pad3(n) { return String(n).padStart(3, '0'); }
   function el(tag, cls, text) {
@@ -78,11 +79,11 @@
   }
 
   function render(force) {
-    var all = hub.projects();
+    var all = hub.projects().filter(function (p) { return !M() || M().inCurrent(p); });
     var list = all.filter(function (p) { return !p.archived; }), arch = all.filter(function (p) { return p.archived; });
     if (!arch.length) showArch = false;
     var admin = hub.role() === 'admin';
-    var s = JSON.stringify([all, hub.total(), hub.trashAny(), hub.role(), showArch]);
+    var s = JSON.stringify([all, hub.total(), hub.trashAny(), hub.role(), showArch, M() ? M().current() : '']);
     var badge = $('cBadge');
     badge.hidden = !document.body.dataset.role || admin;
     badge.textContent = (hub.role() === 'edit' ? T('invité · édition') : T('invité · lecture')) + (hub.label() ? ' · ' + hub.label() : '');
@@ -171,7 +172,7 @@
     var inp = inputFor(face.querySelector('.c-plate'), '', T('Nom du nouveau projet'));
     onceDone(inp, function (save, v) {
       creating = false;
-      var pid = save ? hub.createProject(v) : null;
+      var pid = save ? hub.createProject(v, M() ? M().current() : '') : null;
       render(true);
       if (pid) {
         var born = grid.children[hub.projects().findIndex(function (p) { return p.id === pid; })];
@@ -192,9 +193,9 @@
   }
 
   /* ---------- entrée en scène : le meuble se pose, puis les tiroirs montent un à un, comme les intercalaires ---------- */
-  function enter() {
+  function enter(drawersOnly) {
     if (reduce || !hasData) return;
-    var els = [meuble, grid, extra, zArch, zTrash];
+    var els = drawersOnly ? [grid] : [meuble, grid, extra, zArch, zTrash];
     els.forEach(function (e) { e.classList.add('pre'); });
     void grid.offsetWidth;
     requestAnimationFrame(function () { els.forEach(function (e) { e.classList.remove('pre'); }); });
@@ -286,13 +287,15 @@
   }
   function moveDrag(x, y) {
     drag.ghost.style.transform = 'translate3d(' + (x - drag.offX) + 'px,' + (y - drag.offY) + 'px,0) rotate(-1.5deg)';
+    drag.arrow = M() ? M().arrowAt(x, y, drag.pid) : 0; /* sur une flèche ‹ › : le tiroir part dans le meuble voisin */
+    if (drag.arrow) { if (drag.zone) drag.zone.classList.remove('hot'); drag.zone = null; drag.ghost.classList.add('over'); return; }
     var z = drag.zones ? zoneAt(x, y) : null;
     if (z !== drag.zone) {
       if (drag.zone) drag.zone.classList.remove('hot');
       drag.zone = z;
       if (z) { z.classList.add('hot'); if (navigator.vibrate) navigator.vibrate(8); }
-      drag.ghost.classList.toggle('over', !!z); /* au-dessus d'une zone : le tiroir rapetisse pour laisser lire l'étiquette */
     }
+    drag.ghost.classList.toggle('over', !!z); /* au-dessus d'une zone : le tiroir rapetisse pour laisser lire l'étiquette */
     if (z) return;
     var hit = document.elementsFromPoint(x, y).map(function (e) { return e.closest && e.closest('.c-drawer[data-pid]'); })
       .find(function (n) { return n && n !== drag.slot && n.parentNode === grid; });
@@ -308,6 +311,13 @@
     justDragged = true;
     setTimeout(function () { justDragged = false; }, 60);
     var zone = cancel ? null : g.zone;
+    if (M()) M().clearArrows();
+    if (!cancel && g.arrow) {
+      g.ghost.remove(); g.slot.classList.remove('c-slot'); closeZones();
+      M().moveDrawer(g.pid, g.arrow);
+      render(true);
+      return;
+    }
     if (zone) { dropInZone(g, zone); return; }
     g.ghost.remove();
     g.slot.classList.remove('c-slot');
@@ -365,5 +375,6 @@
   stage.addEventListener('contextmenu', function (e) { if (press || drag) e.preventDefault(); });
   stage.addEventListener('dragstart', function (e) { e.preventDefault(); }); /* pas de glisser natif du navigateur */
 
+  if (M()) M().onSwitch(function () { render(true); enter(true); });
   hub.subscribe(onHub);
 })();

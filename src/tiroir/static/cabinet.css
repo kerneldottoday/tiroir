@@ -176,3 +176,38 @@ body[data-role="admin"] .c-drawer[data-pid] .c-face{touch-action:pan-y}
 .c-ghost .c-face{transform:none;box-shadow:0 26px 30px -14px var(--shadow);transition:none}
 .c-ghost .c-plate{background:var(--plate);color:var(--plate-ink);border-color:var(--plate-ink)}
 .c-ghost .c-rm{display:none}
+
+/* plusieurs meubles : plaque gravée au-dessus (‹ nom ›), points en dessous, le meuble glisse d'un côté à l'autre */
+.c-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin:0 0 16px}
+.c-nav[hidden]{display:none}
+.c-name,.c-name-in{position:relative;min-width:150px;max-width:min(60vw,360px);padding:8px 28px;border-radius:6px;font:17px var(--f-sans);
+  text-align:center;text-transform:lowercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-name{background:var(--ink);color:var(--on-ink);user-select:none;
+  box-shadow:inset 0 0 0 3px var(--ink),inset 0 0 0 4px color-mix(in srgb,var(--on-ink) 35%,transparent)}
+/* deux vis de chaque côté de la plaque */
+.c-name::before,.c-name::after{content:'';position:absolute;top:50%;width:5px;height:5px;margin-top:-2.5px;border-radius:50%;
+  background:color-mix(in srgb,var(--on-ink) 55%,transparent)}
+.c-name::before{left:10px}.c-name::after{right:10px}
+.c-name-in{border:var(--line) solid var(--ink);background:var(--paper);color:var(--paper-ink);outline:none}
+.c-arrow{flex:none;width:38px;height:38px;padding:0 0 3px;border-radius:50%;border:var(--line) solid var(--ink);background:var(--bg);color:var(--ink);
+  font:22px/1 var(--f-sans);cursor:pointer;transition:transform .22s cubic-bezier(.2,.8,.2,1),background-color .2s,color .2s}
+.c-arrow:hover:not(:disabled),.c-arrow:focus-visible{background:var(--plate);border-color:var(--plate-ink);color:var(--plate-ink);transform:translateY(-2px);outline:none}
+.c-arrow:disabled{opacity:.22;cursor:default}
+.c-arrow.hot{background:var(--plate);border-color:var(--plate-ink);color:var(--plate-ink);transform:scale(1.2)}
+.c-under{display:flex;justify-content:center;align-items:center;gap:18px;margin-top:22px;min-height:12px}
+.c-dots{display:flex;gap:9px}
+.c-dots[hidden],.c-drop[hidden]{display:none}
+.c-dot{width:9px;height:9px;padding:0;border-radius:50%;border:var(--line) solid var(--ink);background:transparent;cursor:pointer;
+  transition:background-color .2s,transform .2s}
+.c-dot.on{background:var(--ink);transform:scale(1.2)}
+.c-drop{border:0;background:none;color:var(--t3);font:12px var(--f-sans);text-transform:lowercase;cursor:pointer;padding:2px 6px}
+.c-drop:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.c-drop.armed{background:var(--ink);color:var(--on-ink);border-radius:5px;text-decoration:none}
+.c-meuble.out-left,.c-meuble.out-right{opacity:0;transition:transform .24s cubic-bezier(.5,0,.2,1),opacity .24s ease}
+.c-meuble.out-left{transform:translateX(-80px)}
+.c-meuble.out-right{transform:translateX(80px)}
+.c-meuble.from-right,.c-meuble.from-left{opacity:0;transition:none}
+.c-meuble.from-right{transform:translateX(80px)}
+.c-meuble.from-left{transform:translateX(-80px)}
+@media (max-width:560px){.c-name,.c-name-in{min-width:0;padding:7px 22px;font-size:15px}.c-arrow{width:34px;height:34px}}
+@media (prefers-reduced-motion:reduce){.c-arrow,.c-dot{transition:none !important}}

@@ -69,7 +69,7 @@ class NotesStore:
                 d = self._recover()
         else:
             d = {}
-        for key in ("notes", "imported", "folders", "projects"):
+        for key in ("notes", "imported", "folders", "projects", "cabinets"):
             d.setdefault(key, {})
         return d
 

@@ -1,7 +1,7 @@
 """The board as plain data: validation, drawers (projects), tabs (folders), notes, trash and migrations.
 
 Everything here works on the dict read from notes.json and has no I/O, so it is easy to test.
-Vocabulary: a project is a drawer of the cabinet, a folder is a tab inside a drawer, a note is a sticky note on a wall.
+Vocabulary: a cabinet holds drawers, a project is a drawer, a folder is a tab inside a drawer, a note is a sticky note on a wall.
 """
 from __future__ import annotations
 
@@ -14,14 +14,16 @@ MAX_NOTES = 2000
 MAX_AGENT_NOTES = 500
 MAX_FOLDERS = 200
 MAX_PROJECTS = 100
+MAX_CABINETS = 20
 INBOX_ID = "parrivees"  # drawer of agent notes (historical id, kept for existing data)
 ORPHAN_ID = "pdivers"   # drawer that collects tabs whose drawer no longer exists
+MAIN_CABINET = "cmain"  # first cabinet, created for drawers that have none
 STATUSES = ("todo", "doing", "info", "done")
 ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,40}$")
 
 NAMES = {
-    "en": {"inbox": "inbox", "orphans": "misc", "tabs": ("general", "docs", "ideas")},
-    "fr": {"inbox": "arrivées", "orphans": "divers", "tabs": ("général", "docs", "idées")},
+    "en": {"inbox": "inbox", "orphans": "misc", "cabinet": "main", "tabs": ("general", "docs", "ideas")},
+    "fr": {"inbox": "arrivées", "orphans": "divers", "cabinet": "principal", "tabs": ("général", "docs", "idées")},
 }
 
 
@@ -82,9 +84,20 @@ def clean_folder(d: dict, base: dict | None = None) -> dict | None:
 
 
 def clean_project(d: dict, base: dict | None = None) -> dict | None:
-    """Validate a drawer: same rules as a tab, without a parent."""
-    out = clean_folder({k: v for k, v in d.items() if k != "project"}, base)
-    return {k: v for k, v in out.items() if k != "project"} if out else None
+    """Validate a drawer: same rules as a tab, its parent being a cabinet."""
+    out = clean_folder({k: v for k, v in d.items() if k not in ("project", "cabinet")}, base)
+    if out is None:
+        return None
+    out = {k: v for k, v in out.items() if k != "project"}
+    if "cabinet" in d:
+        out["cabinet"] = _id_or_keep(d["cabinet"], out.get("cabinet", ""))
+    return out
+
+
+def clean_cabinet(d: dict, base: dict | None = None) -> dict | None:
+    """Validate a cabinet: a name (40 chars) and an order."""
+    out = clean_folder({k: v for k, v in d.items() if k in ("name", "order")}, base)
+    return {k: v for k, v in out.items() if k in ("name", "order", "createdAt")} if out else None
 
 
 # ---------- special drawers ----------
@@ -112,6 +125,22 @@ def adopt_orphans(d: dict, names: dict) -> bool:
         d["projects"][ORPHAN_ID] = {k: v for k, v in p.items() if k != "deletedAt"}
     for fid in orphans:
         d["folders"][fid] = {**d["folders"][fid], "project": ORPHAN_ID}
+    return True
+
+
+def adopt_drawers(d: dict, names: dict) -> bool:
+    """Every drawer belongs to a cabinet: one without a valid cabinet goes to the first cabinet
+    (created if there is none). The inbox of the agents is shown in every cabinet and belongs to none."""
+    d.setdefault("cabinets", {})
+    drawers = [pid for pid, p in d["projects"].items() if pid != INBOX_ID and not p.get("deletedAt")]
+    lost = [pid for pid in drawers if d["projects"][pid].get("cabinet") not in d["cabinets"]]
+    if not lost:
+        return False
+    if not d["cabinets"]:
+        d["cabinets"][MAIN_CABINET] = {"name": names["cabinet"], "order": 0, "createdAt": now_ms()}
+    first = min(d["cabinets"], key=lambda k: (d["cabinets"][k].get("order", 0), k))
+    for pid in lost:
+        d["projects"][pid] = {**d["projects"][pid], "cabinet": first}
     return True
 
 
@@ -291,4 +320,29 @@ def _purge_project(d: dict, pid: str):
     for nid in [k for k, n in d["notes"].items() if n.get("trashedWith") in gone]:
         del d["notes"][nid]
     del d["projects"][pid]
+    return None
+
+
+def mutate_cabinet(d: dict, method: str, cid: str, data: dict, purge: bool = False):
+    """A cabinet. PUT / PATCH = name and order. DELETE = only an empty cabinet, and never the last one
+    (move or trash its drawers first: nothing is ever lost with a cabinet)."""
+    cabinets = d.setdefault("cabinets", {})
+    c = cabinets.get(cid)
+    if method == "DELETE":
+        if c is None:
+            return None
+        if len(cabinets) <= 1:
+            return 409, {"error": "last cabinet"}
+        if any(p.get("cabinet") == cid and not p.get("deletedAt") for k, p in d["projects"].items() if k != INBOX_ID):
+            return 409, {"error": "cabinet not empty"}
+        del cabinets[cid]
+        return None
+    if method == "PATCH" and c is None:
+        return 404, {"error": "missing"}
+    if method == "PUT" and c is None and len(cabinets) >= MAX_CABINETS:
+        return 507, {"error": "too many cabinets"}
+    nc = clean_cabinet(data, c)
+    if nc is None:
+        return 400, {"error": "name"}
+    cabinets[cid] = nc
     return None

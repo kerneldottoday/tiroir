@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0 (2026-10-27)
+
+- Several cabinets, each with a name engraved on a plate above it. Arrows ‹ › around the name, keyboard arrows,
+  a swipe on phones or the dots below switch cabinets with a sliding animation.
+- Double-click the name to rename a cabinet, « + » after the last one to add one, « remove this cabinet » when it is empty.
+- Drop a drawer on an arrow to move it to the neighbouring cabinet.
+- Existing drawers go to a first cabinet (« main », or « principal » with `TIROIR_LANG=fr`). The agents' inbox shows in every cabinet.
+- API: `/api/cabinets/<id>` (admin), `cabinet` field on drawers. A cabinet can be deleted only when empty, never the last one.
+
 ## 1.0.0 (2026-10-27)
 
 First public version.

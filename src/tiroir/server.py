@@ -25,8 +25,8 @@ MAX_BODY = 20_000
 IMPORT_EVERY = 10
 FONTS = {f"inter-{v}{w}.woff2" for v in ("", "ext-") for w in (400, 500, 600)}
 PUBLIC_STATIC = {"app.css", "home.css", "cabinet.css", "login.css", "theme.js", "i18n.js"} | FONTS
-AUTH_STATIC = {"app.js", "home.js", "cabinet.js", "partage.js"}
-KINDS = ("notes", "folders", "projects", "invites")
+AUTH_STATIC = {"app.js", "home.js", "cabinet.js", "meubles.js", "partage.js"}
+KINDS = ("notes", "folders", "projects", "cabinets", "invites")
 HEADERS = {
     "Content-Security-Policy": ("default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
                                 "font-src 'self'; connect-src 'self'; img-src 'self' data:; "
@@ -75,7 +75,8 @@ class App:
             if "projects" not in raw:
                 model.migrate_projects(d, self.names)
                 changed = True
-            if model.adopt_orphans(d, self.names) or changed:
+            orphans = model.adopt_orphans(d, self.names)
+            if model.adopt_drawers(d, self.names) or orphans or changed:
                 self.store.write(d)
 
     def maybe_import(self) -> None:
@@ -268,7 +269,9 @@ class Handler(BaseHTTPRequestHandler):
                    if access.in_scope(ctx, k, existing) and (admin or not v.get("deletedAt"))]
         shown = {f.get("project", "") for f in folders}
         projects = [{"id": k, **v} for k, v in d["projects"].items() if admin or k in shown]
-        return {"notes": notes, "folders": folders, "projects": projects}
+        held = {p.get("cabinet", "") for p in projects}
+        cabinets = [{"id": k, **v} for k, v in d["cabinets"].items() if admin or k in held]
+        return {"notes": notes, "folders": folders, "projects": projects, "cabinets": cabinets}
 
     def accept_invite(self, token: str) -> None:
         """Invitation link: opens a guest session then reloads « / » with a page (a direct redirect coming from
@@ -396,12 +399,15 @@ class Handler(BaseHTTPRequestHandler):
                 err = (403, {"error": why}) if why else model.mutate_note(d, method, oid, data, purge)
             elif kind == "projects":
                 err = model.mutate_project(d, method, oid, data, purge)
+            elif kind == "cabinets":
+                err = model.mutate_cabinet(d, method, oid, data, purge)
             else:
                 err = model.mutate_folder(d, method, oid, data, purge)
             if err:
                 self.json(*err)
                 return
             model.adopt_orphans(d, self.app.names)
+            model.adopt_drawers(d, self.app.names)
             self.app.store.write(d)
         self.json(200, {"ok": True})
 

@@ -2,11 +2,11 @@
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Tiroir</title>
 <meta name="robots" content="noindex,nofollow">
-<script src="/static/i18n.js?v=100"></script>
-<script src="/static/theme.js?v=100"></script>
-<link rel="stylesheet" href="/static/app.css?v=100">
-<link rel="stylesheet" href="/static/home.css?v=100">
-<link rel="stylesheet" href="/static/cabinet.css?v=100"></head><body data-mode="cabinet">
+<script src="/static/i18n.js?v=110"></script>
+<script src="/static/theme.js?v=110"></script>
+<link rel="stylesheet" href="/static/app.css?v=110">
+<link rel="stylesheet" href="/static/home.css?v=110">
+<link rel="stylesheet" href="/static/cabinet.css?v=110"></head><body data-mode="cabinet">
 
 <section id="cabinet" aria-label="Le meuble : un tiroir par projet">
   <header class="h-top">
@@ -14,6 +14,11 @@
     <div class="h-acts"><span class="h-badge" id="cBadge" hidden></span><button class="h-link c-all" id="cAll" type="button">tout</button><button class="h-link" data-theme-toggle type="button">sombre</button><button class="h-link admin-only" id="cShare" type="button">partager</button><button class="h-link" id="cOut" type="button">quitter</button></div>
   </header>
   <div class="c-stage" id="cStage">
+    <div class="c-nav" id="cNav" hidden>
+      <button class="c-arrow" id="cPrev" type="button" aria-label="meuble précédent">‹</button>
+      <span class="c-name" id="cName"></span>
+      <button class="c-arrow" id="cNext" type="button" aria-label="meuble suivant">›</button>
+    </div>
     <div class="c-row">
       <div class="h-zone admin-only z-arch" id="cZArch" aria-hidden="true">
         <svg class="z-ico" viewBox="0 0 64 80" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -33,6 +38,7 @@
         <span class="z-lab">corbeille</span><span class="z-sub">30 jours</span>
       </div>
     </div>
+    <div class="c-under"><div class="c-dots" id="cDots" hidden></div><button class="c-drop admin-only" id="cDrop" type="button" hidden>retirer ce meuble</button></div>
     <div class="c-extra" id="cExtra"></div>
     <div class="c-shelf" id="cShelf" hidden><div class="c-grid c-shelf-grid" id="cShelfGrid" role="list" aria-label="Tiroirs archivés"></div></div>
   </div>
@@ -111,8 +117,9 @@ double-clic sur le mur, ou « + note »</pre></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="share" hidden></div>
 
-<script src="/static/app.js?v=100"></script>
-<script src="/static/home.js?v=100"></script>
-<script src="/static/cabinet.js?v=100"></script>
-<script src="/static/partage.js?v=100"></script>
+<script src="/static/app.js?v=110"></script>
+<script src="/static/meubles.js?v=110"></script>
+<script src="/static/home.js?v=110"></script>
+<script src="/static/cabinet.js?v=110"></script>
+<script src="/static/partage.js?v=110"></script>
 </body></html>

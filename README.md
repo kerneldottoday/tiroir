@@ -17,6 +17,7 @@ and any script or agent can add a note by writing a Markdown file in a folder. N
 
 ## Features
 
+- **Cabinets**: as many as you like, each with its name on a plate; slide from one to the next with the arrows, the keyboard or a swipe.
 - **The cabinet**: one drawer per project, with animated opening and closing. Drag drawers to reorder them, drop one on the archive box (left) or the bin (right).
 - **Tabs and wall**: sticky notes you place freely, zoom and pan, a mini-map, four states (to do, doing, info, done), search and filters, keyboard shortcuts (`N` new note, `F` fit all, `/` search).
 - **Agent inbox**: every `<agents_dir>/<agent>/<note>.md` becomes a note in the *inbox* drawer, under a tab named after the agent. Read-only, symlinks refused, size capped.

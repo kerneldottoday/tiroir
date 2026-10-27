@@ -25,6 +25,7 @@ L'interface suit la langue du navigateur.
 
 ## Ce que ça fait
 
+- **Plusieurs meubles** : autant que tu veux, chacun avec son nom sur une plaque ; on passe de l'un à l'autre avec les flèches, le clavier ou en glissant du doigt.
 - **Le meuble** : un tiroir par projet, qui s'ouvre et se referme en animation. On glisse un tiroir pour le ranger, le poser sur les archives (à gauche) ou la corbeille (à droite).
 - **Les intercalaires et le mur** : post-it posés librement, zoom, mini-carte, quatre états, recherche, raccourcis (`N`, `F`, `/`).
 - **Les agents** : chaque fichier `<dossier_agents>/<agent>/<note>.md` devient un post-it dans le tiroir « arrivées ». Lecture seule, liens symboliques refusés, taille limitée.

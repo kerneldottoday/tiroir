@@ -38,6 +38,9 @@
     'Le meuble : un tiroir par projet': 'The cabinet: one drawer per project', 'Projets': 'Projects', 'Tiroirs archivés': 'Archived drawers',
     'Revenir au meuble': 'Back to the cabinet', 'Tiroir ouvert : les intercalaires du projet': 'Open drawer: the tabs of the project',
     'Dossiers de projets': 'Project tabs',
+    /* cabinets */
+    'meuble précédent': 'previous cabinet', 'meuble suivant': 'next cabinet', 'nouveau meuble': 'new cabinet', 'nom du meuble': 'cabinet name',
+    'retirer ce meuble': 'remove this cabinet', 'sûr ?': 'sure?', 'tiroir « {name} » rangé dans « {c} »': 'drawer “{name}” moved to “{c}”',
     /* theme */
     'sombre': 'dark', 'clair': 'light', 'Passer en thème clair': 'Switch to the light theme', 'Passer en thème sombre': 'Switch to the dark theme',
     /* sharing */

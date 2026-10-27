@@ -57,7 +57,7 @@ def export(cfg: Config, out: str | None) -> int:
     except StoreError as exc:
         print(f"tiroir: {exc}", file=sys.stderr)
         return 1
-    text = json.dumps({k: d[k] for k in ("projects", "folders", "notes")}, ensure_ascii=False, indent=2)
+    text = json.dumps({k: d[k] for k in ("cabinets", "projects", "folders", "notes")}, ensure_ascii=False, indent=2)
     if out:
         with open(out, "w", encoding="utf-8") as fh:
             fh.write(text + "\n")

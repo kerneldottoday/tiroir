@@ -155,7 +155,7 @@
       projects = new Map();
       plist.forEach(function (p) {
         if (p && typeof p.id === 'string') projects.set(p.id, { id: p.id, name: str(p.name, '?'), order: num(p.order, 0), archived: p.archived === true,
-                                                                deletedAt: num(p.deletedAt, 0) });
+                                                                deletedAt: num(p.deletedAt, 0), cabinet: str(p.cabinet, '') });
       });
       if (mode() === 'wall' && cur !== 'all' && cur !== 'none' && cur !== 'trash' && !liveFolder(cur)) goHome();
     }
@@ -181,7 +181,7 @@
       if (r.status === 401) { location.href = '/'; throw new Error('auth'); }
       if (!r.ok) throw new Error('http ' + r.status);
       return r.json();
-    }).then(function (j) { onNotes(j.notes || [], j.folders || [], j.projects || []); })
+    }).then(function (j) { if (window.ndsMeubles) window.ndsMeubles.load(j.cabinets || []); onNotes(j.notes || [], j.folders || [], j.projects || []); })
       .catch(function () { online = false; setSync(); })
       .then(function () { loading = false; inited = true; setSync(); });
   }
@@ -526,13 +526,13 @@
   function saveProject(pid, data, isNew) {
     return enqueue(pid, function () { return api(isNew ? 'PUT' : 'PATCH', '/api/projects/' + pid, data); });
   }
-  function createProject(name) {
+  function createProject(name, cabinet) {
     name = cleanName(name);
     if (!name || !isAdmin()) return null;
     var order = 0; projects.forEach(function (p) { if (p.order < 1e5) order = Math.max(order, p.order + 1); });
     var pid = newId('p');
-    projects.set(pid, { id: pid, name: name, order: order });
-    saveProject(pid, { name: name, order: order }, true);
+    projects.set(pid, { id: pid, name: name, order: order, cabinet: cabinet || '' });
+    saveProject(pid, { name: name, order: order, cabinet: cabinet || '' }, true);
     DEFAULT_TABS.forEach(function (t) { createFolder(t, pid); });
     return pid;
   }
@@ -776,7 +776,7 @@
       return sortedFolders().filter(inCurrent).map(function (f) { return { id: f.id, name: f.name, count: folderCount(f.id), archived: !!f.archived }; });
     },
     projects: function () {
-      var list = sortedProjects().map(function (p) { return { id: p.id, name: p.name, count: projectCount(p.id), tabs: projectFolders(p.id).length, archived: !!p.archived }; });
+      var list = sortedProjects().map(function (p) { return { id: p.id, name: p.name, count: projectCount(p.id), tabs: projectFolders(p.id).length, archived: !!p.archived, cabinet: p.cabinet }; });
       if (orphanCount()) list.push({ id: ORPHANS, name: T('sans tiroir'), count: 0, tabs: orphanCount(), virtual: true });
       return list;
     },
@@ -792,6 +792,18 @@
     reorderProjects: reorderProjects,
     deleteProject: deleteProject,
     archiveProject: archiveProject,
+    /* meubles (meubles.js) : un tiroir change de meuble ; outils partagés pour enregistrer et prévenir */
+    moveProjectTo: function (pid, cid) {
+      var p = projects.get(pid);
+      if (!p || !isAdmin() || p.cabinet === cid) return;
+      projects.set(pid, Object.assign({}, p, { cabinet: cid }));
+      saveProject(pid, { cabinet: cid });
+      if (hubCb) hubCb();
+    },
+    _save: function (key, method, path, data) { return enqueue(key, function () { return api(method, path, data); }); },
+    _toast: toast,
+    _changed: function () { if (hubCb) hubCb(); },
+    _newId: newId,
     trashFolder: trashFolder,
     archiveFolder: archiveFolder,
     moveFolder: moveFolder,
