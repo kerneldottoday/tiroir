@@ -54,6 +54,8 @@ def clean_note(d: dict, base: dict | None = None) -> dict:
         out["body"] = str(d["body"])[:4000]
     if "tag" in d:
         out["tag"] = str(d["tag"])[:24]
+    if "answer" in d:  # your answer to an agent question (the « ask » flag itself comes only from the agent file)
+        out["answer"] = str(d["answer"])[:4000]
     if "status" in d and d["status"] in STATUSES:
         out["status"] = d["status"]
     for k, lo, hi in (("x", -1_000_000, 1_000_000), ("y", -1_000_000, 1_000_000), ("z", 0, 10**9), ("n", 0, 10**6)):

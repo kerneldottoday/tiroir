@@ -20,8 +20,10 @@ and any script or agent can add a note by writing a Markdown file in a folder. N
 - **Cabinets**: as many as you like, each with its name on a plate; slide from one to the next with the arrows, the keyboard or a swipe.
 - **The cabinet**: one drawer per project, with animated opening and closing. Drag drawers to reorder them, drop one on the archive box (left) or the bin (right).
 - **Tabs and wall**: sticky notes you place freely, zoom and pan, a mini-map, four states (to do, doing, info, done), search and filters, keyboard shortcuts (`N` new note, `F` fit all, `/` search).
-- **Agent inbox**: every `<agents_dir>/<agent>/<note>.md` becomes a note in the *inbox* drawer, under a tab named after the agent. Read-only, symlinks refused, size capped.
-- **Sharing**: invitation links, read-only or edit, for every tab or a chosen few, revocable at once. Only the admin deletes.
+- **Agents ask, you answer**: every `<agents_dir>/<agent>/<note>.md` becomes a note, in the *inbox* drawer or in the drawer its header names. A question waits for your answer, which is written back for the agent.
+- **Checkboxes and links** in notes (`- [ ]` lines, tick them on the card), **Ctrl+K** search across every cabinet, drawer fronts that show questions, new notes and things to do.
+- **Installable** on a phone's home screen.
+- **Sharing**: invitation links, read-only or edit, for everything, one cabinet (with its future drawers) or chosen tabs, revocable at once. Only the admin deletes.
 - **Trash for 30 days** for notes, tabs and whole drawers, with undo.
 - **Your data stays safe**: atomic writes with `fsync`, three rotating backups, and a damaged file is never mistaken for an empty board.
 - Light and dark themes, English and French interface, works on a phone.
@@ -84,6 +86,21 @@ EOF
 
 Within ten seconds the note appears in the *inbox* drawer, tab `RESEARCH-BOT`. The first heading is the title,
 the rest is the body (700 characters kept). Each file is imported once. Agent text is shown as plain text and never executed.
+
+An optional header files the note and turns it into a question:
+
+```markdown
+---
+project: kitchen reno     # first tab of that drawer instead of the inbox
+status: todo              # todo | doing | info | done
+question: yes             # waits for your answer
+---
+# Which worktop supplier?
+Two quotes: 410 € and 455 €.
+```
+
+When you answer in the note panel, Tiroir writes `<TIROIR_DATA_DIR>/answers/<agent>/<same file name>`
+(`# title`, blank line, your answer). The agent reads it there; nothing else is needed.
 
 ## Expose it
 

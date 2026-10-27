@@ -2,7 +2,8 @@
 
 - Roles: "admin" (password, every right), "edit" (guest: create / edit notes), "view" (guest: read only).
   Only the admin deletes, manages drawers and tabs, the trash and the invitations.
-- An invitation is a secret link /i/<token>, a role and a scope: every tab (folders = None) or a list of tabs.
+- An invitation is a secret link /i/<token>, a role and a scope: every tab (folders = None), a list of tabs,
+  or whole cabinets (cabinets = [ids]: their drawers of the moment, including the ones added later).
   Deleting the invitation ends at once every session opened with that link.
 - Sessions are stored on disk as the SHA-256 of the cookie (never the cookie itself): they survive restarts.
   Admin sessions remember the password version: a new password ends them all.
@@ -99,7 +100,8 @@ class Store:
         inv = self._read(self.invites_path).get(sess.get("invite", ""))
         if not inv:
             return None  # invitation deleted: session ended
-        return {"role": inv["role"], "folders": inv.get("folders"), "label": inv.get("label", ""), "invite": sess["invite"]}
+        return {"role": inv["role"], "folders": inv.get("folders"), "cabinets": inv.get("cabinets"),
+                "label": inv.get("label", ""), "invite": sess["invite"]}
 
     # ---------- invitations ----------
     def list_invites(self) -> list[dict]:
@@ -133,6 +135,11 @@ class Store:
                 f = data["folders"]
                 inv["folders"] = None if f is None else [x for x in f if isinstance(x, str) and ID_RE.match(x)][:200] \
                     if isinstance(f, list) else inv.get("folders")
+            if "cabinets" in data:  # share whole cabinets (their tabs are worked out at each request)
+                c = data["cabinets"]
+                inv["cabinets"] = [x for x in c if isinstance(x, str) and ID_RE.match(x)][:20] if isinstance(c, list) and c else None
+                if inv["cabinets"]:
+                    inv["folders"] = None
             if not inv["label"]:
                 return 400, {"error": "name"}
             self._write(self.invites_path, {**invs, iid: inv})

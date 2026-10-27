@@ -41,6 +41,15 @@
     /* cabinets */
     'meuble précédent': 'previous cabinet', 'meuble suivant': 'next cabinet', 'nouveau meuble': 'new cabinet', 'nom du meuble': 'cabinet name',
     'retirer ce meuble': 'remove this cabinet', 'sûr ?': 'sure?', 'tiroir « {name} » rangé dans « {c} »': 'drawer “{name}” moved to “{c}”',
+    /* questions, cases, recherche, façades */
+    'réponse envoyée à {a}': 'answer sent to {a}', 'Répondre': 'Answer', '❓ Ta réponse à l’agent': '❓ Your answer to the agent',
+    '+ case à cocher': '+ checkbox', 'Chercher partout': 'Search everywhere', 'Chercher dans tous les meubles…': 'Search every cabinet…',
+    'chercher': 'search', '{n} nouvelle': '{n} new', '{n} nouvelles': '{n} new', '{n} à faire': '{n} to do',
+    /* partage d'un meuble */
+    'meuble « {name} »': 'cabinet “{name}”', 'tout le Tiroir': 'all of Tiroir', 'Accès à': 'Access to', 'un meuble': 'a cabinet',
+    'des intercalaires': 'some tabs', 'Les tiroirs que tu ajouteras plus tard à ce meuble seront visibles aussi.': 'Drawers you add to this cabinet later will be visible too.',
+    'Choisis au moins un intercalaire.': 'Pick at least one tab.', 'Aucun lien pour l’instant.': 'No link yet.', 'Copier le lien': 'Copy the link',
+    'Impossible de charger les liens.': 'Could not load the links.', 'Erreur : {m}': 'Error: {m}',
     /* theme */
     'sombre': 'dark', 'clair': 'light', 'Passer en thème clair': 'Switch to the light theme', 'Passer en thème sombre': 'Switch to the dark theme',
     /* sharing */

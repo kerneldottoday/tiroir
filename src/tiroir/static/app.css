@@ -153,3 +153,46 @@ button{cursor:pointer}
 #trashFolders[hidden]{display:none}
 .tf-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)}
 .tf-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+
+/* ---------- texte des notes : cases à cocher et liens (notetext.js) ---------- */
+.note .nb{display:block;-webkit-line-clamp:unset;max-height:calc(1.4em * 7);white-space:normal}
+.note .nb .nl{white-space:pre-wrap}
+.note .nb .ck{display:flex;align-items:flex-start;gap:6px;margin:1px 0}
+.note .nb .ck input{flex:none;width:14px;height:14px;margin:1px 0 0;accent-color:var(--ink);cursor:pointer}
+.note .nb .ck.done span{text-decoration:line-through;opacity:.55}
+.note .nb a{color:inherit;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
+.note.sel .nb .ck input{accent-color:var(--plate)}
+/* question d'un agent qui attend ta réponse : carte cerclée de jaune, ❓ dans l'en-tête */
+.note.ask{box-shadow:0 0 0 3px var(--plate),0 10px 22px -14px var(--shadow)}
+.note.ask .nh span::before{content:'❓ '}
+.lab-row{display:flex;justify-content:space-between;align-items:center}
+.ask-fld{padding:10px;border-radius:10px;background:color-mix(in srgb,var(--plate) 35%,transparent);border:var(--line) solid var(--plate-ink)}
+.ask-fld textarea{min-height:90px}
+.ask-acts{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ask-fld[hidden]{display:none}
+
+/* ---------- recherche partout : Ctrl+K (search.js) ---------- */
+.k-root{position:fixed;inset:0;z-index:95;display:flex;justify-content:center;align-items:flex-start;padding:12vh 16px 16px}
+.k-root[hidden]{display:none}
+.k-back{position:absolute;inset:0;background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(2px)}
+.k-panel{position:relative;width:min(620px,100%);max-height:70vh;display:flex;flex-direction:column;background:var(--paper);color:var(--paper-ink);
+  border:var(--line) solid var(--ink);border-radius:14px;box-shadow:0 30px 60px -30px var(--shadow);overflow:hidden;
+  transform:translateY(-8px);opacity:0;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .18s ease}
+.k-root.show .k-panel{transform:none;opacity:1}
+.k-in{border:0;border-bottom:var(--line) solid var(--ink);background:transparent;color:inherit;padding:16px 18px;font:17px var(--f-sans);outline:none}
+.k-list{overflow:auto;padding:6px}
+.k-row{display:flex;align-items:center;gap:12px;width:100%;padding:9px 12px;border:0;border-radius:9px;background:transparent;color:inherit;text-align:left;cursor:pointer;font:inherit}
+.k-row.on{background:var(--plate);color:var(--plate-ink)}
+.k-mid{display:flex;flex-direction:column;min-width:0}
+.k-t{font-weight:500;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.k-p{font-size:12px;opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:lowercase}
+.k-empty{padding:14px;font-size:13px;opacity:.7}
+@media (prefers-reduced-motion:reduce){.k-panel{transition:none}}
+
+/* ---------- partage : tout / un meuble / des intercalaires ---------- */
+.sh-scopes{display:flex;gap:16px;flex-wrap:wrap}
+.sh-hint{margin:0;font-size:12.5px;color:var(--paper-dim)}
+.sh-hint[hidden],.sh-cab[hidden],.sh-folders[hidden]{display:none}
+.sh-folders{display:flex;flex-direction:column;gap:10px;padding:4px 0 4px 4px;max-height:240px;overflow:auto}
+.sh-group{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:4px 14px}
+.sh-gname{grid-column:1/-1;font-size:12px;text-transform:lowercase;color:var(--paper-dim);border-bottom:1px solid color-mix(in srgb,var(--paper-ink) 15%,transparent);padding-bottom:2px}

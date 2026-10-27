@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.0 (2026-10-27)
+
+- **Agents ask, you answer.** An optional header in the agent file (`project`, `status`, `question: yes`) files the note
+  in the right drawer; a question shows with a yellow ring and a ❓ on the drawer front; your answer is written to
+  `<data>/answers/<agent>/<file>` for the agent to read.
+- **Checkboxes and links**: lines `- [ ]` become checkboxes you tick right on the card (progress shown as 1/3), http(s) addresses become links.
+  « + checkbox » in the note panel.
+- **Drawer fronts** show what matters: ❓ questions waiting, new agent notes since your last visit, notes to do.
+- **Search everywhere** with Ctrl+K (or « search » on the cabinet): every cabinet, every drawer, opens the note on its wall.
+- **Share a whole cabinet**: the person sees its drawers, including the ones you add later, and nothing else.
+- **Installable app** (manifest and icons): add Tiroir to your phone's home screen.
+
 ## 1.1.0 (2026-10-27)
 
 - Several cabinets, each with a name engraved on a plate above it. Arrows ‹ › around the name, keyboard arrows,

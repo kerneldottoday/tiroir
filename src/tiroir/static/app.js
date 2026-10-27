@@ -33,7 +33,8 @@
     var st = STATUS[d.status] ? d.status : 'info';
     return { id: id, title: str(d.title, ''), body: str(d.body, ''), status: st, tag: str(d.tag, ''),
              x: num(d.x, 0), y: num(d.y, 0), z: num(d.z, 1), n: num(d.n, 0), createdAt: num(d.createdAt, 0), updatedAt: num(d.updatedAt, 0), src: str(d.src, ''),
-             folder: str(d.folder, ''), deletedAt: num(d.deletedAt, 0), trashedWith: str(d.trashedWith, '') };
+             folder: str(d.folder, ''), deletedAt: num(d.deletedAt, 0), trashedWith: str(d.trashedWith, ''),
+             ask: d.ask === true, answer: str(d.answer, '') };
   }
   function liveFolder(fid) { var f = folders.get(fid); return !!f && !f.deletedAt; }
   function folderOf(n) { return liveFolder(n.folder) ? n.folder : ''; }
@@ -221,10 +222,15 @@
     el.style.left = n.x + 'px'; el.style.top = n.y + 'px'; el.style.zIndex = n.z;
     el.style.setProperty('--rot', (((hash(id) % 5) - 2) * 0.5) + 'deg');
     var fl = folderName(folderOf(n)) || n.tag;
-    el.children[1].children[0].textContent = pad(n.n) + (fl ? ' · ' + fl : '');
+    var pg = window.ndsText ? window.ndsText.progress(n.body) : [0, 0];
+    el.children[1].children[0].textContent = pad(n.n) + (fl ? ' · ' + fl : '') + (pg[1] ? ' · ' + pg[0] + '/' + pg[1] : '');
+    el.classList.toggle('ask', n.ask && !n.answer); /* question d'un agent qui attend ta réponse */
     el.children[1].children[1].className = 'sdot s-' + n.status;
     el.children[2].textContent = n.title || T('Sans titre');
-    el.children[3].textContent = n.body;
+    if (window.ndsText) window.ndsText.body(el.children[3], n.body, readOnly || n.deletedAt ? null : function (txt) {
+      persist(id, { body: txt }); if (sel === id) $('fBody').value = txt;
+    });
+    else el.children[3].textContent = n.body;
     el.children[3].style.display = n.body ? '' : 'none';
     el.classList.toggle('sel', sel === id);
   }
@@ -264,7 +270,7 @@
       b.setAttribute('aria-current', sel === n.id ? 'true' : 'false');
       var mk = document.createElement('span'); mk.className = 'mk'; mk.textContent = '▶';
       var mid = document.createElement('span');
-      var t = document.createElement('span'); t.className = 'rt'; t.textContent = n.title || T('Sans titre');
+      var t = document.createElement('span'); t.className = 'rt'; t.textContent = (n.ask && !n.answer ? '❓ ' : '') + (n.title || T('Sans titre'));
       var fl = folderName(folderOf(n)) || n.tag;
       var s = document.createElement('span'); s.className = 'rs'; s.textContent = pad(n.n) + (fl ? ' · ' + fl : '') + ' · ' + STATUS[n.status].label;
       mid.appendChild(t); mid.appendChild(s);
@@ -292,11 +298,13 @@
     if (!n) return;
     $('fid').textContent = pad(n.n);
     var editing = fromSnap && document.getElementById('fiche').contains(document.activeElement);
-    if (!editing) { fillFolderSelect(folderOf(n)); $('fTitle').value = n.title; $('fBody').value = n.body; }
+    if (!editing) { fillFolderSelect(folderOf(n)); $('fTitle').value = n.title; $('fBody').value = n.body; $('fAnswer').value = n.answer; }
+    $('fAsk').hidden = !n.ask;
+    $('fAnswered').textContent = n.answer ? T('réponse envoyée à {a}', { a: n.tag.toLowerCase() }) : '';
     $('fMeta').textContent = T('Modifiée le {d}', { d: fmtDate(n.updatedAt || n.createdAt) }) + (n.src ? ' · ' + T('Source : {s}', { s: n.src }) : '');
     Array.from($('seg').children).forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.s === n.status ? 'true' : 'false'); });
     var trash = !!n.deletedAt, ro = readOnly || trash;
-    ['fTitle', 'fBody', 'fFolder'].forEach(function (i) { $(i).disabled = ro; });
+    ['fTitle', 'fBody', 'fFolder', 'fAnswer', 'fAnswerBtn'].forEach(function (i) { $(i).disabled = ro; });
     Array.from($('seg').children).forEach(function (b) { b.disabled = ro; });
     $('fRestore').hidden = !(trash && isAdmin());
     $('fCenter').hidden = trash;
@@ -804,6 +812,41 @@
     _toast: toast,
     _changed: function () { if (hubCb) hubCb(); },
     _newId: newId,
+    /* façade d'un tiroir : à faire, questions d'agents en attente, notes arrivées depuis ta dernière visite */
+    stats: function (pid, since) {
+      var ids = new Set(projectFolders(pid).map(function (f) { return f.id; })), r = { todo: 0, ask: 0, fresh: 0 };
+      notes.forEach(function (n) {
+        if (n.deletedAt || !ids.has(n.folder)) return;
+        if (n.status === 'todo') r.todo++;
+        if (n.ask && !n.answer) r.ask++;
+        if (n.src && n.createdAt > (since || 0)) r.fresh++;
+      });
+      return r;
+    },
+    /* recherche partout (Ctrl+K) et ouverture d'une note trouvée */
+    search: function (q) {
+      q = String(q || '').trim().toLowerCase();
+      if (!q) return [];
+      return Array.from(notes.values()).filter(function (n) {
+        return !n.deletedAt && (n.title + ' ' + n.body + ' ' + n.tag).toLowerCase().indexOf(q) >= 0;
+      }).sort(function (a, b) { return b.updatedAt - a.updatedAt; }).slice(0, 30).map(function (n) {
+        var f = folders.get(n.folder), p = f && projects.get(f.project);
+        return { id: n.id, title: n.title || T('Sans titre'), status: n.status, ask: n.ask && !n.answer,
+                 path: (p ? p.name + ' / ' : '') + (f ? f.name : T('Sans dossier')), body: n.body };
+      });
+    },
+    /* partage : tous les intercalaires vivants, classés par tiroir (quel que soit le tiroir ouvert) */
+    allTabs: function () {
+      return sortedProjects().map(function (p) {
+        return { id: p.id, name: p.name, cabinet: p.cabinet, tabs: projectFolders(p.id).map(function (f) { return { id: f.id, name: f.name }; }) };
+      }).filter(function (g) { return g.tabs.length; });
+    },
+    openNote: function (id) {
+      var n = notes.get(id);
+      if (!n) return;
+      openFolder(liveFolder(n.folder) ? n.folder : 'all');
+      setTimeout(function () { select(id, true); }, 60);
+    },
     trashFolder: trashFolder,
     archiveFolder: archiveFolder,
     moveFolder: moveFolder,
@@ -882,6 +925,13 @@
   $('fBody').addEventListener('input', function (e) { if (sel) queuePatch(sel, { body: e.target.value }); });
   ['fTitle', 'fBody'].forEach(function (i) { $(i).addEventListener('blur', function () { if (sel) flush(sel); }); });
   $('fRestore').addEventListener('click', function () { if (sel) restoreNote(sel); });
+  /* répondre à la question d'un agent : la réponse est écrite pour lui sur le serveur, la note passe à « fait » */
+  $('fAnswerBtn').addEventListener('click', function () {
+    var n = sel && notes.get(sel), v = $('fAnswer').value.trim();
+    if (!n || !v || readOnly) return;
+    persist(sel, { answer: v, status: 'done' }); flush(sel); syncSel();
+    toast(T('réponse envoyée à {a}', { a: n.tag.toLowerCase() }));
+  });
   $('fDel').addEventListener('click', function () {
     var b = $('fDel');
     if (b.classList.contains('armed')) { if (sel) deleteNote(sel); resetDel(); return; }

@@ -21,6 +21,23 @@
     return e;
   }
   function plural(n, one, many) { return n + ' ' + T(n === 1 ? one : many); }
+  /* dernière visite de chaque tiroir (dans ce navigateur) : ce qui est arrivé depuis est « nouveau » */
+  function seen(pid) {
+    var k = 'tiroir-seen:' + pid, v = 0;
+    try { v = Number(localStorage.getItem(k)) || 0; if (!v) { v = Date.now(); localStorage.setItem(k, String(v)); } } catch (e) { v = Date.now(); }
+    return v;
+  }
+  function markSeen(pid) { try { localStorage.setItem('tiroir-seen:' + pid, String(Date.now())); } catch (e) {} }
+  /* façade : « 3 à faire », « ❓ 1 » (question d'agent en attente), « 2 nouvelles » */
+  function badges(p) {
+    var box = el('span', 'c-badges');
+    if (p.virtual || !hub.stats) return box;
+    var st = hub.stats(p.id, seen(p.id));
+    if (st.ask) box.appendChild(el('span', 'c-b c-b-ask', '❓ ' + st.ask));
+    if (st.fresh) box.appendChild(el('span', 'c-b c-b-new', T(st.fresh === 1 ? '{n} nouvelle' : '{n} nouvelles', { n: st.fresh })));
+    if (st.todo) box.appendChild(el('span', 'c-b', T('{n} à faire', { n: st.todo })));
+    return box;
+  }
 
   /* ---------- un tiroir : étiquette jaune, porte-fiche, numéro noir, poignée ---------- */
   function drawerEl(p, i) {
@@ -39,7 +56,7 @@
     var hw = el('span', 'c-hw');
     hw.appendChild(el('span', 'c-lock'));
     hw.appendChild(el('span', 'c-handle'));
-    face.appendChild(plate); face.appendChild(holder); face.appendChild(tag); face.appendChild(hw);
+    face.appendChild(plate); face.appendChild(holder); face.appendChild(tag); face.appendChild(badges(p)); face.appendChild(hw);
     face.addEventListener('click', function () { if (!justDragged) open(d, p); });
     if (hub.role() === 'admin' && !p.virtual) {
       plate.title = T('double-clic : renommer');
@@ -83,7 +100,8 @@
     var list = all.filter(function (p) { return !p.archived; }), arch = all.filter(function (p) { return p.archived; });
     if (!arch.length) showArch = false;
     var admin = hub.role() === 'admin';
-    var s = JSON.stringify([all, hub.total(), hub.trashAny(), hub.role(), showArch, M() ? M().current() : '']);
+    var stats = hub.stats ? all.map(function (p) { return p.virtual ? 0 : hub.stats(p.id, seen(p.id)); }) : [];
+    var s = JSON.stringify([all, stats, hub.total(), hub.trashAny(), hub.role(), showArch, M() ? M().current() : '']);
     var badge = $('cBadge');
     badge.hidden = !document.body.dataset.role || admin;
     badge.textContent = (hub.role() === 'edit' ? T('invité · édition') : T('invité · lecture')) + (hub.label() ? ' · ' + hub.label() : '');
@@ -136,6 +154,7 @@
   function open(d, p) {
     if (opening || creating) return;
     opening = true;
+    if (!p.virtual) markSeen(p.id);
     d.classList.add('pull');
     stage.classList.add('opening');
     setTimeout(function () {

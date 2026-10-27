@@ -20,9 +20,15 @@
     return e;
   }
   function linkOf(inv) { return location.origin + '/i/' + inv.token; }
+  function cabinets() { return window.ndsMeubles ? window.ndsMeubles.list() : []; }
   function scopeText(inv) {
-    if (!inv.folders) return T('tous les dossiers');
-    var names = {}; hub.folders().forEach(function (f) { names[f.id] = f.name; });
+    if (inv.cabinets && inv.cabinets.length) {
+      var cn = {}; cabinets().forEach(function (c) { cn[c.id] = c.name; });
+      return T('meuble « {name} »', { name: inv.cabinets.map(function (id) { return cn[id] || '?'; }).join(', ') });
+    }
+    if (!inv.folders) return T('tout le Tiroir');
+    var names = {};
+    hub.allTabs().forEach(function (g) { g.tabs.forEach(function (f) { names[f.id] = g.name + ' / ' + f.name; }); });
     var list = inv.folders.map(function (id) { return names[id]; }).filter(Boolean);
     return list.length ? list.join(', ') : T('aucun dossier (supprimés)');
   }
@@ -31,8 +37,8 @@
   function copy(text, btn) {
     var done = function () { var t = btn.textContent; btn.textContent = T('Copié ✓'); setTimeout(function () { btn.textContent = t; }, 1600); };
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, function () { window.prompt('Copie ce lien :', text); });
-    } else window.prompt('Copie ce lien :', text);
+      navigator.clipboard.writeText(text).then(done, function () { window.prompt(T('Copie ce lien :'), text); });
+    } else window.prompt(T('Copie ce lien :'), text);
   }
 
   /* ---------- construction du panneau ---------- */
@@ -59,31 +65,54 @@
       l.appendChild(inp); l.appendChild(el('span', '', r[1])); seg.appendChild(l);
     });
     form.appendChild(seg);
-    form.appendChild(el('span', 'lab', T('Dossiers')));
-    var all = el('label', 'sh-check'); var allIn = el('input'); allIn.type = 'checkbox'; allIn.checked = true; allIn.id = 'shAll';
-    all.appendChild(allIn); all.appendChild(el('span', '', T('Tous (y compris les futurs)')));
-    form.appendChild(all);
+    /* à quoi la personne a accès : tout, un meuble (avec ses futurs tiroirs), ou des intercalaires choisis */
+    form.appendChild(el('span', 'lab', T('Accès à')));
+    var scope = el('div', 'sh-scopes');
+    [['all', T('tout le Tiroir')], ['cabinet', T('un meuble')], ['tabs', T('des intercalaires')]].forEach(function (r, i) {
+      var l = el('label', 'sh-check'); var inp = el('input'); inp.type = 'radio'; inp.name = 'shScope'; inp.value = r[0]; inp.checked = i === 0;
+      inp.addEventListener('change', showScope);
+      l.appendChild(inp); l.appendChild(el('span', '', r[1])); scope.appendChild(l);
+    });
+    form.appendChild(scope);
+    var cab = el('select', 'sh-in sh-cab'); cab.id = 'shCab'; cab.setAttribute('aria-label', T('un meuble'));
+    form.appendChild(cab);
+    form.appendChild(el('p', 'sh-hint sh-cab-hint', T('Les tiroirs que tu ajouteras plus tard à ce meuble seront visibles aussi.')));
     var box = el('div', 'sh-folders'); form.appendChild(box);
-    allIn.addEventListener('change', function () { box.classList.toggle('off', allIn.checked); });
     var go = el('button', 'btn primary', T('Créer le lien')); go.type = 'submit'; form.appendChild(go);
     form.appendChild(el('p', 'sh-msg'));
-    form.addEventListener('submit', function (e) { e.preventDefault(); create(name, allIn, box); });
+    form.addEventListener('submit', function (e) { e.preventDefault(); create(name, box); });
     panel.appendChild(form);
     panel.appendChild(el('div', 'lab sh-sub', T('Liens actifs')));
     panel.appendChild(el('div', 'sh-list'));
     root.appendChild(panel);
   }
+  function scopeKind() { return (root.querySelector('input[name=shScope]:checked') || {}).value || 'all'; }
+  function showScope() {
+    var k = scopeKind();
+    root.querySelector('.sh-cab').hidden = k !== 'cabinet';
+    root.querySelector('.sh-cab-hint').hidden = k !== 'cabinet';
+    root.querySelector('.sh-folders').hidden = k !== 'tabs';
+  }
   function fillFolders() {
+    var cab = root.querySelector('.sh-cab'); cab.textContent = '';
+    var cur = window.ndsMeubles ? window.ndsMeubles.current() : '';
+    cabinets().forEach(function (c) { var o = el('option', '', c.name); o.value = c.id; o.selected = c.id === cur; cab.appendChild(o); });
+    root.querySelector('input[name=shScope][value=cabinet]').disabled = !cabinets().length;
     var box = root.querySelector('.sh-folders'); box.textContent = '';
-    box.classList.toggle('off', root.querySelector('#shAll').checked);
-    hub.folders().forEach(function (f) {
-      var l = el('label', 'sh-check'); var c = el('input'); c.type = 'checkbox'; c.value = f.id;
-      l.appendChild(c); l.appendChild(el('span', '', f.name)); box.appendChild(l);
+    hub.allTabs().forEach(function (g) {
+      var grp = el('div', 'sh-group');
+      grp.appendChild(el('div', 'sh-gname', g.name));
+      g.tabs.forEach(function (f) {
+        var l = el('label', 'sh-check'); var c = el('input'); c.type = 'checkbox'; c.value = f.id;
+        l.appendChild(c); l.appendChild(el('span', '', f.name)); grp.appendChild(l);
+      });
+      box.appendChild(grp);
     });
+    showScope();
   }
   function renderList() {
     var list = root.querySelector('.sh-list'); list.textContent = '';
-    if (!invites.length) { list.appendChild(el('p', 'sh-empty', 'Aucun lien pour l’instant.')); return; }
+    if (!invites.length) { list.appendChild(el('p', 'sh-empty', T('Aucun lien pour l’instant.'))); return; }
     invites.slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); }).forEach(function (inv) {
       var row = el('div', 'sh-row');
       var info = el('div', 'sh-info');
@@ -91,7 +120,7 @@
       top.appendChild(el('span', 'sh-pill' + (inv.role === 'edit' ? ' edit' : ''), inv.role === 'edit' ? T('édition') : T('lecture')));
       info.appendChild(top); info.appendChild(el('div', 'sh-scope', scopeText(inv)));
       var acts = el('div', 'sh-acts');
-      var cp = el('button', 'btn', 'Copier le lien'); cp.type = 'button';
+      var cp = el('button', 'btn', T('Copier le lien')); cp.type = 'button';
       cp.addEventListener('click', function () { copy(linkOf(inv), cp); });
       var del = el('button', 'btn danger', T('Révoquer')); del.type = 'button';
       del.addEventListener('click', function () { revoke(inv, del); });
@@ -103,21 +132,24 @@
   /* ---------- actions ---------- */
   function load() {
     api('GET', '/api/invites').then(function (j) { invites = j.invites || []; renderList(); })
-      .catch(function () { say('Impossible de charger les liens.', true); });
+      .catch(function () { say(T('Impossible de charger les liens.'), true); });
   }
-  function create(name, allIn, box) {
+  function create(name, box) {
     var label = name.value.replace(/\s+/g, ' ').trim();
-    if (!label) { say('Donne un nom à ce lien.', true); name.focus(); return; }
+    if (!label) { say(T('Donne un nom à ce lien.'), true); name.focus(); return; }
+    var kind = scopeKind();
     var picked = Array.from(box.querySelectorAll('input:checked')).map(function (c) { return c.value; });
-    if (!allIn.checked && !picked.length) { say('Choisis au moins un dossier.', true); return; }
+    if (kind === 'tabs' && !picked.length) { say(T('Choisis au moins un intercalaire.'), true); return; }
+    var cab = root.querySelector('.sh-cab').value;
     var role = (root.querySelector('input[name=shRole]:checked') || {}).value || 'view';
     var id = 'i' + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
-    api('PUT', '/api/invites/' + id, { label: label, role: role, folders: allIn.checked ? null : picked }).then(function (inv) {
+    var body = { label: label, role: role, folders: kind === 'tabs' ? picked : null, cabinets: kind === 'cabinet' && cab ? [cab] : null };
+    api('PUT', '/api/invites/' + id, body).then(function (inv) {
       invites.push(inv); renderList(); name.value = '';
       var first = root.querySelector('.sh-row .btn');
       if (first) copy(linkOf(inv), first);
       say(T('Lien créé et copié : envoie-le à {name}.', { name: inv.label }));
-    }).catch(function (e) { say('Erreur : ' + e.message, true); });
+    }).catch(function (e) { say(T('Erreur : {m}', { m: e.message }), true); });
   }
   function revoke(inv, btn) {
     if (!btn.classList.contains('armed')) {
@@ -128,7 +160,7 @@
     api('DELETE', '/api/invites/' + inv.id).then(function () {
       invites = invites.filter(function (x) { return x.id !== inv.id; });
       renderList(); say(T('Lien révoqué : {name} n’a plus accès.', { name: inv.label }));
-    }).catch(function (e) { say('Erreur : ' + e.message, true); });
+    }).catch(function (e) { say(T('Erreur : {m}', { m: e.message }), true); });
   }
 
   function open() {

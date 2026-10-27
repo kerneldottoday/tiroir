@@ -24,12 +24,15 @@ COOKIE = "tiroir"
 MAX_BODY = 20_000
 IMPORT_EVERY = 10
 FONTS = {f"inter-{v}{w}.woff2" for v in ("", "ext-") for w in (400, 500, 600)}
-PUBLIC_STATIC = {"app.css", "home.css", "cabinet.css", "login.css", "theme.js", "i18n.js"} | FONTS
-AUTH_STATIC = {"app.js", "home.js", "cabinet.js", "meubles.js", "partage.js"}
+APP_FILES = {"manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"}  # installable app (PWA)
+PUBLIC_STATIC = {"app.css", "home.css", "cabinet.css", "login.css", "theme.js", "i18n.js"} | FONTS | APP_FILES
+AUTH_STATIC = {"app.js", "home.js", "cabinet.js", "meubles.js", "partage.js", "notetext.js", "search.js"}
+CTYPES = {".css": "text/css; charset=utf-8", ".js": "application/javascript; charset=utf-8",
+          ".webmanifest": "application/manifest+json", ".png": "image/png"}
 KINDS = ("notes", "folders", "projects", "cabinets", "invites")
 HEADERS = {
     "Content-Security-Policy": ("default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-                                "font-src 'self'; connect-src 'self'; img-src 'self' data:; "
+                                "font-src 'self'; connect-src 'self'; img-src 'self' data:; manifest-src 'self'; "
                                 "frame-ancestors 'none'; base-uri 'none'; form-action 'self'"),
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "same-origin",
@@ -78,6 +81,17 @@ class App:
             orphans = model.adopt_orphans(d, self.names)
             if model.adopt_drawers(d, self.names) or orphans or changed:
                 self.store.write(d)
+
+    def cabinet_tabs(self, cabinets: list) -> list:
+        """Live tabs of the drawers standing in these cabinets (the agents' inbox is never shared this way)."""
+        try:
+            with self.store.lock:
+                d = self.store.read()
+        except StoreError:
+            return []
+        drawers = {k for k, p in d["projects"].items()
+                   if k != model.INBOX_ID and not p.get("deletedAt") and p.get("cabinet") in cabinets}
+        return [k for k, f in d["folders"].items() if f.get("project") in drawers and not f.get("deletedAt")]
 
     def maybe_import(self) -> None:
         """Import agent notes outside the main lock, at most once every IMPORT_EVERY seconds."""
@@ -156,7 +170,10 @@ class Handler(BaseHTTPRequestHandler):
         return None
 
     def ctx(self) -> dict | None:
-        return self.app.access.context(self.cookie(), self.app.password.version())
+        ctx = self.app.access.context(self.cookie(), self.app.password.version())
+        if ctx and ctx.get("cabinets"):  # a shared cabinet: its tabs of the moment, including drawers added later
+            ctx = {**ctx, "folders": self.app.cabinet_tabs(ctx["cabinets"])}
+        return ctx
 
     def session_cookie(self, tok: str, max_age: int = access.SESSION_DAYS * 86400) -> str:
         return f"{COOKIE}={tok}; HttpOnly;{' Secure;' if self.secure_cookie() else ''} SameSite=Strict; Path=/; Max-Age={max_age}"
@@ -236,8 +253,7 @@ class Handler(BaseHTTPRequestHandler):
         if name in FONTS:
             self.send(200, (STATIC / name).read_bytes(), "font/woff2", {"Cache-Control": "public, max-age=31536000, immutable"})
         elif name in PUBLIC_STATIC or (name in AUTH_STATIC and self.ctx()):
-            ctype = "text/css; charset=utf-8" if name.endswith(".css") else "application/javascript; charset=utf-8"
-            self.send(200, (STATIC / name).read_bytes(), ctype)
+            self.send(200, (STATIC / name).read_bytes(), CTYPES.get(Path(name).suffix, "application/javascript; charset=utf-8"))
         else:
             self.send(404, b"", "text/plain")
 
@@ -246,7 +262,7 @@ class Handler(BaseHTTPRequestHandler):
         if not ctx:
             self.json(401, {"error": "auth"})
         elif path == "/api/me":
-            self.json(200, {"role": ctx["role"], "folders": ctx["folders"], "label": ctx["label"]})
+            self.json(200, {"role": ctx["role"], "folders": ctx["folders"], "label": ctx["label"], "cabinets": ctx.get("cabinets")})
         elif path == "/api/invites":
             if ctx["role"] != "admin":
                 self.json(403, {"error": "admin only"})
@@ -395,8 +411,12 @@ class Handler(BaseHTTPRequestHandler):
             d = self.app.store.read()
             model.purge_trash(d)
             if kind == "notes":
+                before = (d["notes"].get(oid) or {}).get("answer", "")
                 why = access.can_write(ctx, method, d["notes"].get(oid), data, set(d["folders"]))
                 err = (403, {"error": why}) if why else model.mutate_note(d, method, oid, data, purge)
+                note = d["notes"].get(oid) or {}
+                if not err and note.get("answer", "") != before:
+                    agents.write_answer(self.app.cfg.data_dir, note)  # the agent reads it in <data>/answers/<agent>/
             elif kind == "projects":
                 err = model.mutate_project(d, method, oid, data, purge)
             elif kind == "cabinets":

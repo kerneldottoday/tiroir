@@ -1,0 +1,14 @@
+{
+  "name": "Tiroir",
+  "short_name": "tiroir",
+  "description": "A filing cabinet for your sticky notes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#dedede",
+  "theme_color": "#dedede",
+  "icons": [
+    { "src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

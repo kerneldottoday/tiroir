@@ -28,8 +28,10 @@ L'interface suit la langue du navigateur.
 - **Plusieurs meubles** : autant que tu veux, chacun avec son nom sur une plaque ; on passe de l'un à l'autre avec les flèches, le clavier ou en glissant du doigt.
 - **Le meuble** : un tiroir par projet, qui s'ouvre et se referme en animation. On glisse un tiroir pour le ranger, le poser sur les archives (à gauche) ou la corbeille (à droite).
 - **Les intercalaires et le mur** : post-it posés librement, zoom, mini-carte, quatre états, recherche, raccourcis (`N`, `F`, `/`).
-- **Les agents** : chaque fichier `<dossier_agents>/<agent>/<note>.md` devient un post-it dans le tiroir « arrivées ». Lecture seule, liens symboliques refusés, taille limitée.
-- **Le partage** : liens d'invitation en lecture ou en édition, sur tout ou sur certains intercalaires, révocables d'un clic. Seul l'admin supprime.
+- **Les agents posent des questions** : chaque fichier `<dossier_agents>/<agent>/<note>.md` devient un post-it, dans « arrivées » ou dans le tiroir indiqué dans son en-tête (`project:`). Avec `question: oui`, la note attend ta réponse, que Tiroir écrit dans `<données>/answers/<agent>/` pour l'agent.
+- **Cases à cocher et liens** dans les notes, **Ctrl+K** pour chercher dans tous les meubles, façades des tiroirs qui montrent les questions, les nouveautés et le « à faire ».
+- **Installable** sur l'écran d'accueil du téléphone.
+- **Le partage** : liens d'invitation en lecture ou en édition, sur tout, sur un meuble (avec ses futurs tiroirs) ou sur certains intercalaires, révocables d'un clic. Seul l'admin supprime.
 - **Corbeille de 30 jours** pour les notes, les intercalaires et les tiroirs entiers, avec « Annuler ».
 - **Des données à l'abri** : écriture atomique avec `fsync`, trois sauvegardes tournantes, et un fichier abîmé n'est jamais pris pour un mur vide.
 

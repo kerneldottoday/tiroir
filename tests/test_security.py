@@ -80,3 +80,11 @@ def test_untrusted_network_headers_ignored(make):
     for i in range(5):
         s.call("POST", "/login", form={"password": "nope nope nope"}, headers={"X-Forwarded-For": f"203.0.113.{i}"})
     assert s.call("POST", "/login", form={"password": PASSWORD}, headers={"X-Forwarded-For": "203.0.113.99"}).code == 429
+
+
+def test_installable_app_files_are_public(server):
+    r = server.call("GET", "/static/manifest.webmanifest")
+    assert r.code == 200 and r.headers["Content-Type"] == "application/manifest+json" and '"standalone"' in r.text
+    assert server.call("GET", "/static/icon-512.png").headers["Content-Type"] == "image/png"
+    assert "manifest-src 'self'" in server.call("GET", "/").headers["Content-Security-Policy"]
+    assert 'rel="manifest"' in server.call("GET", "/").text
