@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0 (2026-11-03)
+
+- **Tiroir from your terminal.** `tiroir note`, `inbox`, `answer`, `done` and `count` talk to your server from any machine
+  with an API token (`Authorization: Bearer`). `count` prints a short text for a status line (« tiroir 3 ?1 »).
+- **API tokens**: `tiroir token add | list | revoke` on the server. Stored hashed, shown once, revoked at once,
+  never allowed to delete; wrong tokens count as failed logins.
+- `POST /api/drop {text, project?, status?}`: a note placed by the server (inbox or first tab of a drawer).
+
 ## 1.2.0 (2026-10-27)
 
 - **Agents ask, you answer.** An optional header in the agent file (`project`, `status`, `question: yes`) files the note

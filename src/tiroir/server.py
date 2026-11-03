@@ -14,7 +14,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from . import access, agents, model
+from . import access, agents, model, tokens
 from .auth import Attempts, Password, ip_key
 from .config import Config
 from .store import NotesStore, StoreError
@@ -60,6 +60,7 @@ class App:
         self.store = NotesStore(cfg.data_dir)
         self.password = Password(cfg.data_dir)
         self.access = access.Store(cfg.data_dir)
+        self.tokens = tokens.Tokens(cfg.data_dir)
         self.attempts = Attempts()
         self.import_lock = threading.Lock()
         self.last_import = 0.0
@@ -169,7 +170,25 @@ class Handler(BaseHTTPRequestHandler):
                 return v
         return None
 
+    def bearer(self) -> str | None:
+        """API token sent by a terminal or a script (« Authorization: Bearer tir_... »)."""
+        scheme, _, tok = (self.headers.get("Authorization") or "").partition(" ")
+        return tok.strip() if scheme.lower() == "bearer" and tok.strip() else None
+
+    def token_ctx(self, tok: str) -> dict | None:
+        """A wrong token counts as a failed login attempt for this address."""
+        key = self.ip()
+        if not self.app.attempts.reserve(key):
+            return None
+        ctx = self.app.tokens.context(tok)
+        if ctx:
+            self.app.attempts.release(key)
+        return ctx
+
     def ctx(self) -> dict | None:
+        tok = self.bearer()
+        if tok is not None:
+            return self.token_ctx(tok)
         ctx = self.app.access.context(self.cookie(), self.app.password.version())
         if ctx and ctx.get("cabinets"):  # a shared cabinet: its tabs of the moment, including drawers added later
             ctx = {**ctx, "folders": self.app.cabinet_tabs(ctx["cabinets"])}
@@ -190,6 +209,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def json(self, code: int, obj) -> None:
         self.send(code, json.dumps(obj, ensure_ascii=False).encode(), "application/json; charset=utf-8")
+
+    def csrf_ok(self) -> bool:
+        """Cookie sessions need our header and our own page; a bearer token cannot be sent by another site
+        (no CORS here, so a browser never adds an Authorization header cross-site)."""
+        return self.bearer() is not None or (self.headers.get("X-Tiroir") == "1" and self.same_origin())
 
     def same_origin(self) -> bool:
         """Request made by our own page. Sec-Fetch-Site (cannot be forged by a web page) wins; else compare Origin and Host."""
@@ -314,6 +338,8 @@ class Handler(BaseHTTPRequestHandler):
         path = urlsplit(self.path).path
         if path == "/login":
             self.login()
+        elif path == "/api/drop":
+            self.guarded(self.drop)
         elif path == "/logout":
             if self.headers.get("X-Tiroir") != "1" or not self.same_origin():
                 self.send(403, b"", "text/plain")
@@ -322,6 +348,34 @@ class Handler(BaseHTTPRequestHandler):
             self.send(204, b"", "text/plain", {"Set-Cookie": self.session_cookie("", 0)})
         else:
             self.send(404, b"", "text/plain")
+
+    def drop(self) -> None:
+        """POST /api/drop {"text", "project"?, "status"?}: a note from a terminal, placed by the server."""
+        ctx = self.ctx()
+        if not ctx:
+            self.json(401, {"error": "auth"})
+            return
+        if not self.csrf_ok():
+            self.json(403, {"error": "origin"})
+            return
+        data = self.request_data("POST")
+        if ctx["role"] not in ("admin", "edit") or data is None:
+            self.json(403 if data is not None else 400, {"error": "read only" if data is not None else "body"})
+            return
+        tag = ctx["label"] if ctx.get("token") else "terminal"
+        with self.app.store.lock:
+            d = self.app.store.read()
+            try:
+                nid, note = agents.drop_note(d, str(data.get("text", ""))[:4000], str(data.get("project", ""))[:40],
+                                             str(data.get("status", ""))[:12], tag, self.app.names)
+            except agents.DropError as exc:
+                self.json(404 if "drawer" in str(exc) else 400, {"error": str(exc)})
+                return
+            if not access.in_scope(ctx, note["folder"], set(d["folders"])):
+                self.json(403, {"error": "tab out of your scope"})
+                return
+            self.app.store.write({**d, "notes": {**d["notes"], nid: note}})
+        self.json(200, {"ok": True, "id": nid, "folder": note["folder"]})
 
     def login(self) -> None:
         if not self.same_origin():
@@ -383,7 +437,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send(404, b"", "text/plain")
         elif not ctx:
             self.json(401, {"error": "auth"})
-        elif self.headers.get("X-Tiroir") != "1" or not self.same_origin():
+        elif not self.csrf_ok():
             self.json(403, {"error": "origin"})
         elif kind != "notes" and ctx["role"] != "admin":
             self.json(403, {"error": "admin only"})

@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from tiroir import cli
+from tiroir import __version__, cli
 from tiroir.auth import Password
 from tiroir.config import from_env
 
@@ -52,7 +52,7 @@ def test_export_logout_version(server, tmp_path, capsys):
     assert cli.main(["--data", str(server.data), "logout-all"]) == 0
     assert server.call("GET", "/api/notes", admin).code == 401
     assert cli.main(["version"]) == 0
-    assert capsys.readouterr().out.strip().endswith("1.2.0")
+    assert capsys.readouterr().out.strip().endswith(__version__)
 
 
 def test_serve_refuses_without_password(tmp_path, monkeypatch):

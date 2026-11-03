@@ -70,7 +70,29 @@ tiroir set-password [--stdin]          set or change the password (logs out ever
 tiroir logout-all                      end every session, admin and guests
 tiroir export [-o board.json]          the whole board as JSON
 tiroir --data DIR ...                  use another data folder
+tiroir token add NAME [--role view]    API token for a terminal, a script or an agent (shown once)
+tiroir token list | revoke ID|NAME     see or revoke tokens (immediate)
 ```
+
+## From your terminal
+
+Create a token on the server, then save it on your machine (any OS, Python 3.10+, `pipx install tiroir`):
+
+```bash
+ssh myserver tiroir token add laptop --quiet | tiroir login --url https://tiroir.example.org --token-stdin
+tiroir note "Call the bank
+before noon"        # first line = title, goes to the inbox
+tiroir note "Order oak" -t WORKSHOP --todo       # into a drawer
+git log -5 --oneline | tiroir note -              # from a pipe
+tiroir inbox                                      # agent questions and what waits in the inbox
+tiroir answer a1b2c3 "yes, go"                    # the agent reads your answer back
+tiroir done a1b2c3
+tiroir count                                      # « tiroir 3 ?1 » for a status line (cached 2 min, silent on error)
+```
+
+The address can come from a command when it changes (a quick tunnel): `tiroir login --url-command "ssh myserver cat url.txt"`.
+Settings: `TIROIR_URL`, `TIROIR_TOKEN`, or `~/.config/tiroir/client.json` (`%APPDATA%	iroir\client.json` on Windows).
+A token can create, edit and answer notes, never delete; `--role view` only reads.
 
 ## For agents
 
