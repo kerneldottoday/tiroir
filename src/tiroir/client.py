@@ -204,9 +204,11 @@ def cmd_show(url: str, token: str, prefix: str, as_json: bool) -> str:
     return json.dumps(note, ensure_ascii=False, indent=2) if as_json else render(note, board)
 
 
-def cmd_note(url: str, token: str, text: str, project: str, status: str) -> str:
-    r = call(url, token, "POST", "/api/drop", {"text": text, "project": project, "status": status})
-    return f"tiroir: note {r.get('id', '')[:8]} dropped{' in ' + project if project else ' in the inbox'}."
+def cmd_note(url: str, token: str, text: str, project: str, status: str, ask: bool = False) -> str:
+    """Drop a note; with `ask`, a question: its answer is read back with « tiroir show <id> »."""
+    r = call(url, token, "POST", "/api/drop", {"text": text, "project": project, "status": status, **({"ask": True} if ask else {})})
+    kind = "question" if ask else "note"
+    return f"tiroir: {kind} {r.get('id', '')[:8]} dropped{' in ' + project if project else ' in the inbox'}."
 
 
 def cmd_inbox(url: str, token: str, as_json: bool) -> str:

@@ -86,6 +86,8 @@ tiroir note "Order oak" -t WORKSHOP --todo       # into a drawer
 git log -5 --oneline | tiroir note -              # from a pipe
 tiroir inbox                                      # agent questions and what waits in the inbox
 tiroir show a1b2c3                                # one note in full (--json for scripts)
+tiroir note "Deploy tonight?
+A: yes  B: tomorrow" --ask                        # an agent asks; it reads the answer back with show --json
 tiroir answer a1b2c3 "yes, go"                    # the agent reads your answer back
 tiroir done a1b2c3
 tiroir count                                      # « tiroir 3 ?1 » for a status line (cached 2 min, silent on error)

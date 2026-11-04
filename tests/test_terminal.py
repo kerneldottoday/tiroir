@@ -175,6 +175,31 @@ def test_piped_output_is_utf8(monkeypatch):
     assert raw.getvalue().decode("utf-8").strip() == "câbles → ok"
 
 
+def test_agent_asks_through_the_api_and_reads_the_answer(term, capsys):
+    admin = term.login()
+    assert cli.main(["note", "Deploy tonight?\\nA: yes  B: tomorrow", "--ask"]) == 0
+    out = capsys.readouterr().out
+    assert "question" in out
+    q = next(n for n in term.board(admin)[2].values() if n["title"] == "Deploy tonight?")
+    assert q["ask"] is True and q["status"] == "todo" and q["id"][:8] in out
+    assert cli.main(["inbox"]) == 0 and "questions (1)" in capsys.readouterr().out
+    assert cli.main(["answer", q["id"][:6], "B,", "tomorrow"]) == 0
+    capsys.readouterr()
+    assert cli.main(["show", q["id"][:6], "--json"]) == 0
+    seen = json.loads(capsys.readouterr().out)
+    assert (seen["answer"], seen["status"]) == ("B, tomorrow", "done")
+
+
+def test_drop_ask_flag_must_be_true(server):
+    admin = server.login()
+    tok = _token(server)
+    for flag in ("yes", 1, "true"):
+        r = server.call("POST", "/api/drop", body={"text": f"q {flag}", "ask": flag}, headers=_bearer(tok))
+        assert r.code == 200 and "ask" not in server.board(admin)[2][r.json["id"]]
+    r = server.call("POST", "/api/drop", body={"text": "real question", "ask": True, "status": "info"}, headers=_bearer(tok))
+    assert server.board(admin)[2][r.json["id"]]["ask"] is True
+
+
 def test_note_from_stdin_and_count_cache(term, monkeypatch, capsys):
     monkeypatch.setattr("sys.stdin", io.StringIO("From a pipe\nline two\n"))
     assert cli.main(["note", "-"]) == 0

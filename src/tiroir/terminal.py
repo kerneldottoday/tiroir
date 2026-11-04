@@ -19,6 +19,7 @@ def add_client_commands(sub) -> None:
     nt.add_argument("-t", "--drawer", default="", help="drawer name (default: the inbox)")
     nt.add_argument("-s", "--status", default="", help="todo | doing | info | done")
     nt.add_argument("--todo", action="store_true", help="same as --status todo")
+    nt.add_argument("--ask", action="store_true", help="a question waiting for your answer (read it back with « tiroir show <id> »)")
     ib = sub.add_parser("inbox", help="questions of agents and notes waiting in the inbox")
     ib.add_argument("--json", action="store_true")
     sh = sub.add_parser("show", help="print one note in full (title, text, answer)")
@@ -63,7 +64,7 @@ def run(args) -> str:
     url, token, folder = client.settings(getattr(args, "url", None))
     if args.cmd == "note":
         text = sys.stdin.read() if args.text == ["-"] else " ".join(args.text).replace("\\n", "\n")
-        return client.cmd_note(url, token, text, args.drawer, "todo" if args.todo else args.status)
+        return client.cmd_note(url, token, text, args.drawer, "todo" if args.todo else args.status, args.ask)
     if args.cmd == "inbox":
         return client.cmd_inbox(url, token, args.json)
     if args.cmd == "show":

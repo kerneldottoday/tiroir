@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.2 (2026-11-04)
+
+- `tiroir note "question" --ask` (and `POST /api/drop {"ask": true}`): an agent with a token asks a question through the API,
+  then reads your answer back with `tiroir show <id> --json`. No shared folder needed, the note is there at once.
+
 ## 1.3.1 (2026-11-04)
 
 - `tiroir show <id>` prints one note in full: drawer and tab, status, author, title, text, answer (`--json` for scripts).

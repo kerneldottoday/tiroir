@@ -173,9 +173,10 @@ class DropError(ValueError):
     """The note cannot be dropped (unknown drawer, board full, empty text)."""
 
 
-def drop_note(d: dict, text: str, project: str, status: str, tag: str, names: dict) -> tuple[str, dict]:
+def drop_note(d: dict, text: str, project: str, status: str, tag: str, names: dict, ask: bool = False) -> tuple[str, dict]:
     """A new note from plain text: first line = title, the rest = body. Goes to the first tab of the drawer
-    named `project`, or to the `tag` tab of the inbox. Returns (id, note); the caller saves the board."""
+    named `project`, or to the `tag` tab of the inbox. `ask` = a question waiting for your answer (status todo).
+    Returns (id, note); the caller saves the board."""
     lines = [ln.rstrip() for ln in str(text or "").strip().splitlines()]
     if not lines or not lines[0].strip():
         raise DropError("empty note")
@@ -187,7 +188,8 @@ def drop_note(d: dict, text: str, project: str, status: str, tag: str, names: di
     n_max = max([n.get("n", 0) for n in d["notes"].values()] or [0]) + 1
     here = sum(1 for n in d["notes"].values() if n.get("folder") == folder and not n.get("deletedAt"))
     note = model.clean_note({"title": lines[0].lstrip("# ").strip(), "body": "\n".join(lines[1:]).strip(),
-                             "status": STATUS_WORDS.get(status.lower(), "info") if status else "info", "tag": tag.upper(),
+                             "status": STATUS_WORDS.get(status.lower(), "info") if status else ("todo" if ask else "info"),
+                             "tag": tag.upper(),
                              "x": 40 + (here % 4) * 270, "y": 40 + (here // 4) * 230, "z": n_max, "n": n_max, "folder": folder})
     nid = "t" + hashlib.sha1(f"{n_max}-{model.now_ms()}-{note['title']}".encode()).hexdigest()[:12]
-    return nid, note
+    return nid, ({**note, "ask": True} if ask else note)

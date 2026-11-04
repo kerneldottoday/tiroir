@@ -1,2 +1,2 @@
 """Tiroir: a filing cabinet for your sticky notes, on your own server, where your AI agents can drop notes too."""
-__version__ = "1.3.1"
+__version__ = "1.3.2"

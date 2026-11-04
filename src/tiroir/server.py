@@ -350,7 +350,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send(404, b"", "text/plain")
 
     def drop(self) -> None:
-        """POST /api/drop {"text", "project"?, "status"?}: a note from a terminal, placed by the server."""
+        """POST /api/drop {"text", "project"?, "status"?, "ask"?}: a note (or a question) from a terminal, placed by the server."""
         ctx = self.ctx()
         if not ctx:
             self.json(401, {"error": "auth"})
@@ -367,7 +367,7 @@ class Handler(BaseHTTPRequestHandler):
             d = self.app.store.read()
             try:
                 nid, note = agents.drop_note(d, str(data.get("text", ""))[:4000], str(data.get("project", ""))[:40],
-                                             str(data.get("status", ""))[:12], tag, self.app.names)
+                                             str(data.get("status", ""))[:12], tag, self.app.names, ask=data.get("ask") is True)
             except agents.DropError as exc:
                 self.json(404 if "drawer" in str(exc) else 400, {"error": str(exc)})
                 return
