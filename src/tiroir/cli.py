@@ -1,5 +1,5 @@
 """Command line. Server side: tiroir [serve] | set-password | logout-all | export | token | version.
-Terminal side (any machine, with a token): tiroir login | note | inbox | answer | done | count."""
+Terminal side (any machine, with a token): tiroir login | note | inbox | show | answer | done | count."""
 from __future__ import annotations
 
 import argparse
@@ -115,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
     tk.add_argument("--quiet", action="store_true", help="print only the token (to pipe it into « tiroir login »)")
     add_client_commands(sub)
     args = p.parse_args(argv)
-    if args.cmd in ("login", "note", "inbox", "answer", "done", "count"):
+    if args.cmd in ("login", "note", "inbox", "show", "answer", "done", "count"):
         return run_client(args)
 
     cfg = from_env()

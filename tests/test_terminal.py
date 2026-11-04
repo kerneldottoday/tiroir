@@ -137,6 +137,44 @@ def test_note_inbox_answer_done(term, tmp_path, capsys):
     assert json.loads(capsys.readouterr().out) == {"inbox": [], "questions": []}
 
 
+def test_show_prints_the_whole_note(term, capsys):
+    admin = term.login()
+    _drawer(term, admin)
+    assert cli.main(["note", "Bornes → câbles\\nline one\\nline two", "-t", "WORK", "--todo"]) == 0
+    capsys.readouterr()
+    nid = next(n["id"] for n in term.board(admin)[2].values() if n["title"] == "Bornes → câbles")
+    assert cli.main(["show", nid[:6]]) == 0
+    out = capsys.readouterr().out
+    assert "Bornes → câbles" in out and "line one\nline two" in out and "WORK" in out and "todo" in out and nid[:8] in out
+    assert cli.main(["show", nid[:6], "--json"]) == 0
+    assert json.loads(capsys.readouterr().out)["body"] == "line one\nline two"
+    assert cli.main(["show", "zz"]) == 1 and "no note" in capsys.readouterr().err
+
+
+def test_render_note_pure():
+    board = {"projects": [{"id": "pw", "name": "WORK"}], "folders": [{"id": "fw", "name": "docs", "project": "pw"}]}
+    n = {"id": "abcdef1234", "title": "Deploy\x1b[2J?", "body": "why\x1b]0;x\x07\nnow", "folder": "fw", "status": "todo",
+         "tag": "BOT", "ask": True, "answer": "yes", "createdAt": 1_700_000_000_000, "src": "from-agents/bot/q.md"}
+    out = client.render(n, board)
+    assert "\x1b" not in out and "\x07" not in out
+    assert out.splitlines()[0].startswith("abcdef12") and "Deploy[2J?" in out and "WORK › docs" in out
+    assert "question" in out and "answer" in out and "yes" in out and "from-agents/bot/q.md" in out and "why]0;x\nnow" in out
+    bare = client.render({"id": "z1", "title": "Plain"}, {})
+    assert "Plain" in bare and "answer" not in bare
+
+
+def test_piped_output_is_utf8(monkeypatch):
+    raw = io.BytesIO()
+    fake = io.TextIOWrapper(raw, encoding="cp1252", errors="strict")
+    monkeypatch.setattr("sys.stdout", fake)
+    monkeypatch.delenv("PYTHONIOENCODING", raising=False)
+    from tiroir import terminal
+    terminal.utf8_when_piped()
+    print("câbles → ok")
+    sys.stdout.flush()
+    assert raw.getvalue().decode("utf-8").strip() == "câbles → ok"
+
+
 def test_note_from_stdin_and_count_cache(term, monkeypatch, capsys):
     monkeypatch.setattr("sys.stdin", io.StringIO("From a pipe\nline two\n"))
     assert cli.main(["note", "-"]) == 0
@@ -182,6 +220,18 @@ def test_url_command_and_its_fallback(tmp_path):
     env = {"TIROIR_CLIENT_CONFIG": str(conf_path), "TIROIR_TOKEN": "tir_x"}
     client.write_config(conf_path, {"url_command": ok})
     assert client.settings(env=env)[0] == "https://abc.example.org"
+
+
+def test_url_command_never_opens_a_window(tmp_path, monkeypatch):
+    seen = {}
+
+    def fake_run(cmd, **kw):
+        seen.update(kw)
+        return type("R", (), {"stdout": "https://abc.example.org\n"})()
+
+    monkeypatch.setattr(client.subprocess, "run", fake_run)
+    assert client.url_from_command({"url_command": "ssh box cat url.txt"}, tmp_path / "client.json") == "https://abc.example.org"
+    assert seen["creationflags"] == getattr(client.subprocess, "CREATE_NO_WINDOW", 0)  # Windows: no console pops up
 
 
 def test_waiting_and_find_note_pure():

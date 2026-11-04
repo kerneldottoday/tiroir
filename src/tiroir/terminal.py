@@ -1,8 +1,9 @@
-"""Terminal commands of the command line (login, note, inbox, answer, done, count): parsing and printing only,
+"""Terminal commands of the command line (login, note, inbox, show, answer, done, count): parsing and printing only,
 the work is in client.py."""
 from __future__ import annotations
 
 import getpass
+import os
 import sys
 
 from . import client
@@ -20,6 +21,9 @@ def add_client_commands(sub) -> None:
     nt.add_argument("--todo", action="store_true", help="same as --status todo")
     ib = sub.add_parser("inbox", help="questions of agents and notes waiting in the inbox")
     ib.add_argument("--json", action="store_true")
+    sh = sub.add_parser("show", help="print one note in full (title, text, answer)")
+    sh.add_argument("id")
+    sh.add_argument("--json", action="store_true")
     an = sub.add_parser("answer", help="answer an agent question (the agent reads it back)")
     an.add_argument("id")
     an.add_argument("text", nargs="+")
@@ -27,7 +31,7 @@ def add_client_commands(sub) -> None:
     dn.add_argument("id")
     ct = sub.add_parser("count", help="short text for a status line, cached (empty when nothing waits)")
     ct.add_argument("--ttl", type=int, default=client.COUNT_TTL)
-    for parser in (nt, ib, an, dn, ct):
+    for parser in (nt, ib, sh, an, dn, ct):
         parser.add_argument("--url", help="server address (else TIROIR_URL or the config file)")
 
 
@@ -62,6 +66,8 @@ def run(args) -> str:
         return client.cmd_note(url, token, text, args.drawer, "todo" if args.todo else args.status)
     if args.cmd == "inbox":
         return client.cmd_inbox(url, token, args.json)
+    if args.cmd == "show":
+        return client.cmd_show(url, token, args.id, args.json)
     if args.cmd == "answer":
         return client.cmd_answer(url, token, args.id, " ".join(args.text))
     if args.cmd == "done":
@@ -69,9 +75,16 @@ def run(args) -> str:
     return client.cmd_count(url, token, folder, args.ttl)
 
 
+def utf8_when_piped() -> None:
+    """A console prints any text; a pipe (Git Bash, an agent, a file) gets UTF-8 instead of the Windows code page."""
+    if not hasattr(sys.stdout, "reconfigure"):
+        return
+    piped = not sys.stdout.isatty() and not os.environ.get("PYTHONIOENCODING")
+    sys.stdout.reconfigure(**({"encoding": "utf-8"} if piped else {}), errors="replace")
+
+
 def run_client(args) -> int:
-    if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(errors="replace")
+    utf8_when_piped()
     try:
         if args.cmd == "login":
             return login(args)

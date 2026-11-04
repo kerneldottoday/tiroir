@@ -16,6 +16,7 @@ import subprocess
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Mapping
 from pathlib import Path
 
 from . import __version__
@@ -26,6 +27,7 @@ CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f-\x9f]")
 TAILNET = ipaddress.ip_network("100.64.0.0/10")
 TIMEOUT = 10
 COUNT_TTL = 120
+NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)  # Windows: run from a status line, ssh must not pop a console
 
 
 class ClientError(Exception):
@@ -33,7 +35,7 @@ class ClientError(Exception):
 
 
 # ---------- settings ----------
-def config_path(env: dict | None = None) -> Path:
+def config_path(env: Mapping[str, str] | None = None) -> Path:
     e = os.environ if env is None else env
     if e.get("TIROIR_CLIENT_CONFIG"):
         return Path(e["TIROIR_CLIENT_CONFIG"]).expanduser()
@@ -84,7 +86,7 @@ def url_from_command(conf: dict, path: Path) -> str | None:
     cache = path.with_name("last-url.txt")
     try:
         out = subprocess.run(conf["url_command"], shell=True, capture_output=True, text=True, timeout=12,
-                             stdin=subprocess.DEVNULL).stdout
+                             stdin=subprocess.DEVNULL, creationflags=NO_WINDOW).stdout
         url = valid_url((out.strip().splitlines() or [""])[0])
     except (OSError, subprocess.SubprocessError):
         url = None
@@ -97,7 +99,7 @@ def url_from_command(conf: dict, path: Path) -> str | None:
         return None
 
 
-def settings(url: str | None = None, env: dict | None = None) -> tuple[str, str, Path]:
+def settings(url: str | None = None, env: Mapping[str, str] | None = None) -> tuple[str, str, Path]:
     """(url, token, config folder) or ClientError with what is missing."""
     e = os.environ if env is None else env
     path = config_path(e)
@@ -174,7 +176,34 @@ def line(n: dict, tabs: dict) -> str:
     return f"{clean(n['id'])[:8]}  {mark} {where[:14]:<14}  {clean(n.get('title', ''))[:70]}"
 
 
+def when(ms) -> str:
+    try:
+        return time.strftime("%Y-%m-%d %H:%M", time.localtime(int(ms) / 1000)) if ms else ""
+    except (TypeError, ValueError, OverflowError, OSError):
+        return ""
+
+
+def render(n: dict, board: dict) -> str:
+    """One note in full for the terminal: header line, place, then title, text and answer (control characters removed)."""
+    tabs = {f["id"]: f for f in board.get("folders", [])}
+    drawers = {p["id"]: p.get("name", "") for p in board.get("projects", [])}
+    tab = tabs.get(n.get("folder", ""), {})
+    place = " › ".join(clean(x) for x in (drawers.get(tab.get("project", ""), ""), tab.get("name", "")) if x)
+    head = [clean(n["id"])[:8], clean(n.get("status", "")), clean(n.get("tag", "")), when(n.get("createdAt"))]
+    out = ["  ".join(x for x in head if x), *([place] if place else []), *([f"from {clean(n['src'])}"] if n.get("src") else []), ""]
+    out += [("? " if n.get("ask") else "") + clean(n.get("title", "")) + ("  (question)" if n.get("ask") else "")]
+    out += ["", clean(n["body"]).rstrip()] if str(n.get("body", "")).strip() else []
+    out += ["", "── answer", clean(n["answer"]).rstrip()] if str(n.get("answer", "")).strip() else []
+    return "\n".join(out)
+
+
 # ---------- commands ----------
+def cmd_show(url: str, token: str, prefix: str, as_json: bool) -> str:
+    board = call(url, token, "GET", "/api/notes")
+    note = find_note(board, prefix)
+    return json.dumps(note, ensure_ascii=False, indent=2) if as_json else render(note, board)
+
+
 def cmd_note(url: str, token: str, text: str, project: str, status: str) -> str:
     r = call(url, token, "POST", "/api/drop", {"text": text, "project": project, "status": status})
     return f"tiroir: note {r.get('id', '')[:8]} dropped{' in ' + project if project else ' in the inbox'}."

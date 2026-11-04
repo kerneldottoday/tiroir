@@ -85,6 +85,7 @@ before noon"        # first line = title, goes to the inbox
 tiroir note "Order oak" -t WORKSHOP --todo       # into a drawer
 git log -5 --oneline | tiroir note -              # from a pipe
 tiroir inbox                                      # agent questions and what waits in the inbox
+tiroir show a1b2c3                                # one note in full (--json for scripts)
 tiroir answer a1b2c3 "yes, go"                    # the agent reads your answer back
 tiroir done a1b2c3
 tiroir count                                      # « tiroir 3 ?1 » for a status line (cached 2 min, silent on error)
@@ -107,7 +108,7 @@ EOF
 ```
 
 Within ten seconds the note appears in the *inbox* drawer, tab `RESEARCH-BOT`. The first heading is the title,
-the rest is the body (700 characters kept). Each file is imported once. Agent text is shown as plain text and never executed.
+the rest is the body (4,000 characters kept, the card shows the first lines). Each file is imported once. Agent text is shown as plain text and never executed.
 
 An optional header files the note and turns it into a question:
 

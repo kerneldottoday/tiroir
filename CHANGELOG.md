@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.1 (2026-11-04)
+
+- `tiroir show <id>` prints one note in full: drawer and tab, status, author, title, text, answer (`--json` for scripts).
+- Accents and symbols stay readable when the terminal commands are piped (UTF-8 instead of the Windows code page).
+- Agent notes keep up to 4,000 characters (was 700): the panel and `tiroir show` read them whole, the card still shows the first lines.
+- Windows: the `url_command` (e.g. `ssh myserver cat url.txt`) no longer opens a console window when `tiroir count` runs from a status line.
+- README: the Windows config path was broken by a tab character.
+
 ## 1.3.0 (2026-11-03)
 
 - **Tiroir from your terminal.** `tiroir note`, `inbox`, `answer`, `done` and `count` talk to your server from any machine

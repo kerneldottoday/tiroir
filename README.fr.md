@@ -41,7 +41,7 @@ Tout est détaillé dans le [README anglais](README.md#settings). En bref : `tir
 et déconnecte tous les appareils admin, `tiroir export` sort tout le tiroir en JSON, `tiroir logout-all` coupe toutes les sessions.
 
 **Depuis ton terminal** : `tiroir token add pc` sur le serveur, puis `tiroir login` sur ta machine ; ensuite
-`tiroir note "texte" -t TIROIR`, `tiroir inbox` (questions des agents + arrivées), `tiroir answer <id> "réponse"`,
+`tiroir note "texte" -t TIROIR`, `tiroir inbox` (questions des agents + arrivées), `tiroir show <id>` (une note en entier), `tiroir answer <id> "réponse"`,
 `tiroir done <id>` et `tiroir count` pour une barre d'état. Détails dans le [README anglais](README.md#from-your-terminal).
 
 ## Licence

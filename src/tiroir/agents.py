@@ -84,11 +84,11 @@ def drawer_tab(d: dict, project_name: str) -> str:
 
 
 def _note_from_text(raw: str, stem: str) -> tuple[str, str]:
-    """Title = first markdown heading (or the file name), body = the other non-empty lines."""
+    """Title = first markdown heading (or the file name), body = the other non-empty lines (cut by model.clean_note)."""
     lines = [ln.rstrip() for ln in raw.splitlines()]
     title = next((ln.lstrip("# ").strip() for ln in lines if ln.strip().startswith("#")), "") or stem.replace("-", " ")
     body = [ln for ln in lines if not ln.strip().startswith("#") and ln.strip() and set(ln.strip()) != {"-"}]
-    return title, "\n".join(body)[:700]
+    return title, "\n".join(body)
 
 
 def _agent_files(root: Path):

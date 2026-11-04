@@ -32,6 +32,18 @@ def test_agent_file_becomes_a_note(make, tmp_path):
     assert INBOX_ID in projects and len([n for n in notes.values() if n.get("src")]) == 1
 
 
+def test_long_agent_note_is_kept_whole(make, tmp_path):
+    drop = tmp_path / "agents"
+    (drop / "scout").mkdir(parents=True)
+    lines = [f"line {i:03d} " + "x" * 40 for i in range(120)]  # ~6 000 characters
+    (drop / "scout" / "long.md").write_text("# Long report\n\n" + "\n".join(lines) + "\n", encoding="utf-8")
+    s = make(agents_dir=drop)
+    admin = s.login()
+    notes = _wait_for(s, admin, lambda b: any(n.get("src") for n in b[2].values()))[2]
+    body = next(n for n in notes.values() if n.get("src"))["body"]
+    assert len(body) == 4000 and "line 079" in body  # 50 characters a line; was cut at 700 (line 013) before 1.3.1
+
+
 def test_agent_note_is_imported_once(make, tmp_path):
     drop = tmp_path / "agents"
     (drop / "bot").mkdir(parents=True)
